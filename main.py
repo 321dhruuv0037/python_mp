@@ -1,13 +1,17 @@
 import dash_bootstrap_components.themes
-from dash import Dash, html, dcc
+from dash import Dash, html, dcc, dash, Output, Input
 import plotly.express as px
 import pandas as pd
 import plotly.graph_objs as go
 import matplotlib as plot
 import folium
 import dash_bootstrap_components as dbc
+from folium.plugins import HeatMap
+
 import navigation
 from dash_bootstrap_components import themes
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
 
 
 
@@ -15,70 +19,736 @@ from dash_bootstrap_components import themes
 
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
-app = Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
-df =pd.read_csv("Student_dataset_2021.csv")
-new=df.groupby('stream')
-newdf=new.max()
-fig7 =px.bar(newdf,y='jee_perc',text='jee_perc',color='jee_perc',labels={'jee_perc':'Highest percentile in jee'})
-newdf2=df.groupby('stream')
-df2=newdf2.mean()
-fig2 =px.bar(df2,x='parent_income',text='parent_income',color='parent_income',labels={'parent_income':'Average parent income'})
-df3=new.count()
-fig3 =px.bar(df3,x='gender',color='gender',title='MALE VS FEMALE RATIO IN IT',labels={'gener':'gender'})
-df6=df.groupby('gender')
-newdf=df6.count()
-fig =px.pie(newdf,values='sid',hole=0.5,color='sid')
-fig6=fig.update_traces(textinfo='percent+value')
-df=pd.read_csv("location.csv")
-a_list=df[['place','latitude','longitude']].values.tolist()
-map=folium.Map(location=[19.0760,72.8777])
-fg=folium.FeatureGroup(name='map')
-for i in a_list:
-    fg.add_child(folium.Marker(location=[i[1],i[2]],popup=i[0],icon=folium.Icon(color='green')))
-map.add_child(fg)
-map.save('Locations.html')
-fig =px.pie(newdf,values='sid',hole=0.5,color='sid')
-fig.update_traces(textinfo='percent+value')
-fig8=fig
-df3=pd.read_csv("Student_dataset_2021.csv")
-newdata9=df3.groupby('minority')
-newdata10=newdata9.max()
-fig10 =px.bar(newdata10,y='jee_perc',text='jee_perc',color='jee_perc',labels={'jee_perc':'Highest percentile in jee'})
+font_awesome1 = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css'
+font_awesome2 = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/regular.min.css'
+font_awesome3 = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/solid.min.css'
+external_stylesheets = [
+    dbc.themes.BOOTSTRAP,
+    '/assets/style.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/regular.min.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/solid.min.css'
+]
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+# df =pd.read_csv("Student_dataset_2021.csv")
+# new=df.groupby('stream')
+# newdf=new.max()
+# fig7 =px.bar(newdf,y='jee_perc',text='jee_perc',color='jee_perc',labels={'jee_perc':'Highest percentile in jee'})
+# newdf2=df.groupby('stream')
+# df2=newdf2.mean()
+# fig2 =px.bar(df2,x='parent_income',text='parent_income',color='parent_income',labels={'parent_income':'Average parent income'})
+# df3=new.count()
+# fig3 =px.bar(df3,x='gender',color='gender',title='MALE VS FEMALE RATIO IN IT',labels={'gener':'gender'})
+# df6=df.groupby('gender')
+# newdf=df6.count()
+# fig =px.pie(newdf,values='sid',hole=0.5,color='sid')
+# fig6=fig.update_traces(textinfo='percent+value')
+# df=pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/location.csv")
+# a_list=df[['place','latitude','longitude']].values.tolist()
+# map=folium.Map(location=[19.0760,72.8777])
+# fg=folium.FeatureGroup(name='map')
+# for i in a_list:
+#     fg.add_child(folium.Marker(location=[i[1],i[2]],popup=i[0],icon=folium.Icon(color='green')))
+# map.add_child(fg)
+# map.save('Locations.html')
+# fig =px.pie(newdf,values='sid',hole=0.5,color='sid')
+# fig.update_traces(textinfo='percent+value')
+# fig8=fig
+# df3=pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/Student_dataset_2021.csv")
+# newdata9=df3.groupby('minority')
+# newdata10=newdata9.max()
+# fig10 =px.bar(newdata10,y='jee_perc',text='jee_perc',color='jee_perc',labels={'jee_perc':'Highest percentile in jee'})
+#
+# ###machine learning###
+# dfnew1=pd.read_csv("Student_dataset_2021.csv")
+# X=dfnew1[[ 'x_perc','xii_perc','cet_perc','physics_xii','chem_xii','maths_xii']]
+# Y = dfnew1['jee_perc']
+# X_train,X_test,Y_train,Y_test= train_test_split(X, Y, test_size=0.4,random_state=101)
+# lm = LinearRegression()
+# lm.fit(X_train, Y_train)
+# print(lm.intercept_)
+# print(lm.coef_)
+# X_train.columns
+# newdf=pd.DataFrame(lm.coef_,X.columns,columns=['jee percentile'])
+# abcd=newdf.to_html()
+
+df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
+year_list = list(df['year'].unique())
+# Read the CSV file into a Pandas DataFrame
+data = pd.read_csv('heatmap.csv')
+
+# Create a map centered on a specific location
+m = folium.Map(location=[18.932245, 72.826439], zoom_start=10)
+
+# Create a heatmap layer from the data
+heat_data = [[row['latitude'], row['longitude']] for index, row in data.iterrows()]
+heatmap = HeatMap(heat_data, name='Heatmap')
+
+# Add the heatmap layer to the map
+heatmap.add_to(m)
+#text marker
+
+
+# Add a layer control to the map
+folium.LayerControl().add_to(m)
+#western line
+folium.PolyLine([(18.9354, 72.8262),(18.9442, 72.8239),(18.9536, 72.8174),(18.9591, 72.8132),(18.9696, 72.8196),(18.9827, 72.8193)
+,(19.0088, 72.8308)
+,(19.0111, 72.8403)
+ ,(19.0173, 72.8426)
+ ,(19.0271, 72.8464)
+ ,(19.0395, 72.8445)
+ ,(19.0544, 72.8402)
+ ,(19.0686, 72.8394)
+ ,(19.0814, 72.8416)
+ ,(19.0972, 72.8445)
+ ,(19.1197, 72.8464)
+,(19.1365, 72.8497)
+,(19.1542, 72.8534)
+,(19.1647, 72.8491)
+,(19.1867, 72.8486)
+,(19.204431413672715, 72.85164270837505)
+,(19.2292, 72.8572)
+,(19.2502, 72.8592)
+ ,(19.2813, 72.8563)
+ ,(19.3103, 72.8517)
+ ,(19.3465, 72.8545)
+ ,(19.3802, 72.8395)
+ ,(19.4186, 72.8179)
+,(19.455235541869268, 72.81211431208968),(19.519096449558383, 72.85036910889094),(19.577117893783946, 72.82171623907293),(19.6982688067134, 72.772179156276),(19.990148370578478, 72.74472504650069)],color="green",tooltip="Western Line",weight=3).add_to(m)
+
+folium.Marker(location=[19.455134379429648, 72.81202848139804],
+              popup=folium.Popup('<i>Western Line</i>'),
+              tooltip='Western Line',
+              icon=folium.DivIcon(html="""Western Line""",
+                                  class_name="mapText"),
+              ).add_to(m)
+
+# inject html into the map html
+m.get_root().html.add_child(folium.Element("""
+<style>
+.mapText {
+    white-space: nowrap;
+    color:green;
+    font-size:medium
+}
+</style>
+"""))
+#csmt to kasara
+folium.PolyLine([(18.943888,72.835991),(18.994736760414902, 72.83299728510069),(19.020330448510123, 72.84365954445657),(19.066573611668673, 72.87980951393833),(19.085515812592636, 72.90727222557408),(19.18659041458438, 72.97536110837471),(19.19042930746032, 73.02342671394041),(19.18871434223293, 73.04228938324867),(19.23571726600612, 73.13078415340435),(19.29602463586944, 73.20378245441398),(19.439762665560814, 73.30787021023416),(19.64852859016493, 73.47304712558349)],color="blue",tooltip="Central Line").add_to(m)
+#kalyan to khopoli
+folium.PolyLine([(19.23571726600612, 73.13078415340435),(19.16699440588468, 73.23863896084042),(18.91283348037467, 73.3207955409171),(18.789286786303602, 73.34539545440576)],color="blue",tooltip="Central Line").add_to(m)
+folium.Marker(location=[19.23644145356165, 73.13028936975887],
+              popup=folium.Popup('<i>Central Line</i>'),
+              tooltip='Central Line',
+              icon=folium.DivIcon(html="""Central Line""",
+                                  class_name="mapText"),
+              ).add_to(m)
+#harbour csmt to panvel
+folium.PolyLine([(18.940295750335533, 72.83575288324467),(18.962173966262736, 72.83900556789912),(18.988393871718458, 72.84329590608344),(19.0162622023617, 72.85879774048796),(19.067444858086915, 72.8800346016453),(19.048343621374624, 72.93196402557346),(19.06339879342969, 72.99882074488211),(19.055727544411585, 73.017959166992),(19.02220959140532, 73.0189194026994),(19.01947799290236, 73.03948562689445),(19.02666691178611, 73.05961378456648),(19.008516434583814, 73.09459223336893),(18.992155097791116, 73.12093264019435)],color="yellow",tooltip="Harbour Line").add_to(m)
+#harbor wadala to goregaon
+folium.PolyLine([(19.0162622023617, 72.85879774048796),(19.041049756832933, 72.84699720172428),(19.056530893119035, 72.83989345615814),(19.068513041300847, 72.8399588909093),(19.164918718417084, 72.84922634833158)],color="yellow",tooltip="Harbour Line").add_to(m)
+#metro line 9 gkp-vsv
+folium.PolyLine([(19.08680000156715, 72.90811058324704),(19.09658860912144, 72.89500762742944),(19.10809761674883, 72.87981916604637),(19.121114420719188, 72.8482312390653),(19.130568159099553, 72.82134052371956)],color="cyan",tooltip="Metro Line 9").add_to(m)
+#thane vashi line
+folium.PolyLine([(19.18675254065755, 72.97540402372054),(19.176037824932855, 72.99472545441198),(19.103518084649536, 73.01215414724949),(19.07580016180758, 73.01782716790103),(19.06339879342969, 72.99882074488211)],color="purple",tooltip="TransHarbour Line").add_to(m)
+
+# inject html into the map html
+m.get_root().html.add_child(folium.Element("""
+<style>
+.mapText {
+    white-space: nowrap;
+    color:green;
+    font-size:medium
+}
+</style>
+"""))
+folium.LayerControl(overlay={
+    'Markers': '<span style="color: green">Western Line</span> | <span style="color: blue">Central Line</span> | <span style="color: yellow">Harbour Line</span>',
+}).add_to(m)
+
+
+
+
+# Save the map to an HTML file
+m.save('heatmap.html')
+
+
+
+
+
+
+
 
 
 
 
 app.layout = html.Div([
-navigation.navbar,
+html.Div(
+    [
+        navigation.navbar,
+        html.H1("Student Data Analysis Dashboard" ,style={'margin-left':'300px','padding-top':'10px'}),
+        html.P(
+            "Key Takeaways From The Page",
+            className="lead",style={'margin-left':'800px','margin-top':'50px'}
+        ),
+    ],
+    className="container",
+),
 
-    dbc.Container([
+#     dbc.Container([
+#     dbc.Row([
+#         dbc.Col([
+#             dcc.Graph(
+#         id='example-graph',
+#         figure=fig7
+#     ),],),
+#         dbc.Col([dcc.Graph(
+#             id='example-graph2',
+#             figure=fig2
+#         ),
+#             dcc.Graph(
+#                 id='example-graph10',
+#                 figure=fig10
+#             ),
+#             html.Div(
+#
+#             )
+#         ]),
+#
+#     ]),
+#
+#
+#     dcc.Graph(
+#             id='example-graph3',
+#             figure=fig8
+#         ),
+#     html.Iframe(id='maps', srcDoc=open('Locations.html', 'r').read(), width='100%', height='600'),
+#
+# ])
+        dbc.Row([
+            dbc.Col([
+html.Div([
+            html.Div([
+                html.P('Year:', className='fix_label', style={'color': 'black',
+                                                              'margin-top': '15px'}),
+                dcc.Slider(id='select_years',
+                           min=year_list[0],
+                           max=year_list[-1],
+                           value=year_list[1],
+                           step=1,
+                           included=False,
+                           updatemode='drag',
+                           tooltip={'always_visible': True},
+                           marks={str(yrs): str(yrs) for yrs in range(year_list[0], year_list[-1], 2)},
+                           className='slider_component')
+            ], className='container_slider'),
+dcc.Graph(id='bar_graph',
+                      config={'displayModeBar': 'hover'},
+                      className='bar_graph_border',style={'border': '1px ridge black'})
+
+]),
+            ],width=6,style={'padding': '10px'}),
+            #column 2
+            dbc.Col([
+                html.Div(id='calculations'),
+            ],width=6 , style={'padding': '10px'})
+
+        ]),
     dbc.Row([
         dbc.Col([
-            dcc.Graph(
-        id='example-graph',
-        figure=fig7
-    ),],),
-        dbc.Col([dcc.Graph(
-            id='example-graph2',
-            figure=fig2
-        ),
-            dcc.Graph(
-                id='example-graph10',
-                figure=fig10
-            ),
-        ]),
-
+            dcc.Graph(id='bar_graph3',
+                      config={'displayModeBar': 'hover'},
+                      className='bar_graph_border',style={'border': '1px ridge black', 'background-color': '#f8f9fa'})
+        ], width=6 , style={'padding': '10px'}),
+        dbc.Col([
+            dcc.Graph(id='bar_graph2',
+                      config={'displayModeBar': 'hover'},
+                      className='bar_graph_border',style={'border': '1px ridge black'})
+        ], width=6 , style={'padding': '10px'})
     ]),
+    dbc.Row([
+        dbc.Col([
+            html.Div([
+                dcc.Graph(id='pie_chart',
+                          config={'displayModeBar': 'hover'},
+                          className='bar_graph_border',style={'border': '1px ridge black'})
+
+            ]),
+        ], width=6, style={'padding': '10px'}),
+        dbc.Col([
+            html.Div([
+                dcc.Graph(id='pie_chart2',
+                          config={'displayModeBar': 'hover'},
+                          className='bar_graph_border ',style={'border': '1px ridge black'})
+
+            ]),
+
+        ], width=6, style={'padding': '10px'})
+    ]),
+    dbc.Row([
+        html.P(dcc.Markdown(
+            """
+            **Below map** shows the distribution of Students **accross** the city of ***Mumbai***
+            """
+        ), style={'line-height': '1', 'font-size': '25px',
+                  'margin-left':'300px','margin-bottom': '20px'}),
+        html.Iframe(id='maps', srcDoc=open('heatmap.html', 'r').read(), width='100%', height='600',style={'border':'5px solid black'}),
+    ],style={'padding':'20px'}),
+html.Footer(className='text-center text-lg-start text-muted', style={'text-align': 'left', 'background-color': '#333333'}, children=[
+        html.Section(className='', style={'padding': '5px'}, children=[
+            html.Div(className='container text-center text-md-start mt-5', children=[
+                html.Div(className='row mt-3', children=[
+                    html.Div(className='col-md-3 col-lg-4 col-xl-3 mx-auto mb-4', children=[
+                        html.Div(className='cell-sm-6 cell-lg-3 cell-xl-4', children=[
+                            html.A(href='/index.html', children=[
+                                html.Img(className='img-responsive', src='/assets/capstone_logo.jpeg', alt='DBIT', width='250', height='50')
+                            ]),
+                            html.P(className='offset-top-20 offset-md-top-35 inset-xl-right-30', style={'color': 'white', 'padding': '1rem', 'text-align': 'left'}, children=[
+                                html.B(children='We are a specialized data company that offers a range of services related to data science, data analysis, data visualization, and machine learning.')
+                            ])
+                        ])
+                    ]),
+                    html.Div(className='col-md-3 col-lg-2 col-xl-2 mx-auto mb-4', style={'color': '#e5e5e5', 'margin-top': '2rem', 'text-align': 'left'}, children=[
+                        html.H5(className='text-uppercase fw-bold mb-4', style={'text-align': 'center'}, children=[
+                            html.B(children='quick links')
+                        ]),
+                        html.P(children=[
+                            '>',
+                            html.A(href='assets/aboutus .html', className='text-reset', style={'text-decoration': 'none', 'text-align': 'left'}, children=['ABOUT US'])
+                        ]),
+                        html.P(children=[
+                            '>',
+                            html.A(href='https://github.com/321dhruuv0037/python_mp', className='text-reset', style={'text-decoration': 'none', 'text-align': 'left'}, children=['CONTRIBUTORS'])
+                        ])
+                    ]),
+                    html.Div(className='col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4', style={'color': '#e5e5e5', 'text-align': 'left'}, children=[
+                        html.P(style={'text-align': 'left'}, children=[
+                            html.B(html.H5(style={'text-align': 'left'}, children=['Capstone Data Company'])),
+                            html.Br(),
+                            '1st Floor, C Wing',
+                            html.Br(),
+                            'Don Bosco Institute Of Technology Premier Automobiles Road, Opp. Fiat Company, Kurla (W), Mumbai- 400 070',
+                            html.Br(),
+                               ]),
 
 
-    dcc.Graph(
-            id='example-graph3',
-            figure=fig8
-        ),
-    html.Iframe(id='maps', srcDoc=open('Locations.html', 'r').read(), width='100%', height='600'),
-
+    ])
+                    ]),
+                   html.B(html.H5(style={'text-align': 'centre','margin-left':'330px'}, children=['Copyright 2023 © All rights reserved by Capstone Data Comapany'])),
+                ])
+            ])
+        ])
 ])
-])
+@app.callback(Output('bar_graph2', 'figure'),
+              [Input('select_years', 'value')])
+def update_graph(value):
+    df5 = df.groupby(['stream', 'year'])['parent_income'].mean().reset_index()
+    df6 = df5[df5['year'] == value]
+
+    return {
+        'data': [
+            go.Bar(
+                x=df6['stream'],
+                y=df6['parent_income'],
+                text=df6['parent_income'],
+                texttemplate='%{text:,.2s}',
+                textposition='outside',
+                marker=dict(color='#38D56F'),
+                textfont=dict(
+                    family="sans-serif",
+                    size=12,
+                    color='black'),
+            )
+        ],
+        'layout': go.Layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title={
+                'text': '<b>Average Annual Parent Income branchwise (₹) in' + ' ' + str((value)),
+
+                'y': 0.98,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'},
+            titlefont={
+                'color': 'black',
+                'size': 17},
+            hovermode='closest',
+            margin=dict(t=30, r=70),
+            xaxis=dict(showline=True,
+                       showgrid=False,
+                       showticklabels=True,
+                       linecolor='black',
+                       linewidth=1,
+                       ticks='outside',
+                       tickfont=dict(
+                           family='Arial',
+                           size=12,
+                           color='black')
+
+                       ),
+
+            yaxis=dict(title='<b>Average Parent Income (₹)</b>',
+                       visible=True,
+                       color='black',
+                       showline=False,
+                       showgrid=True,
+                       )
+        )
+    }
+
+
+@app.callback(Output('bar_graph', 'figure'),
+              [Input('select_years', 'value')])
+def update_graph(value):
+    df3 = df.groupby(['stream', 'year'])['jee_perc'].max().reset_index()
+    df4 = df3[df3['year'] == value]
+
+    return {
+        'data': [
+            go.Bar(
+                x=df4['stream'],
+                y=df4['jee_perc'],
+                text=df4['jee_perc'],
+                texttemplate='%{text:,.2s}',
+                textposition='outside',
+                marker=dict(color='#38D56F'),
+                textfont=dict(
+                    family="sans-serif",
+                    size=12,
+                    color='black'),
+            )
+        ],
+        'layout': go.Layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title={
+                'text': '<b>Highest Percentile branchwise (%) in' + ' ' + str((value)),
+
+                'y': 0.98,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'},
+            titlefont={
+                'color': 'black',
+                'size': 17},
+            hovermode='closest',
+            margin=dict(t=30, r=70),
+            xaxis=dict(showline=True,
+                       showgrid=False,
+                       showticklabels=True,
+                       linecolor='black',
+                       linewidth=1,
+                       ticks='outside',
+                       tickfont=dict(
+                           family='Arial',
+                           size=12,
+                           color='black')
+
+                       ),
+
+            yaxis=dict(title='<b>Highest Percentile (%)</b>',
+                       visible=True,
+                       color='black',
+                       showline=False,
+                       showgrid=True,
+                       )
+        )
+
+    }
+@app.callback(Output('pie_chart', 'figure'),
+              [Input('select_years', 'value')])
+def update_graph(value):
+    df6 = df.groupby(['year', 'gender'])['sid'].count().reset_index()
+    df7 = df6[df6['year'] == value]
+
+    return {
+        'data': [go.Pie(
+            labels=df7['gender'],
+            values=df7['sid'],
+            hoverinfo='label+value+percent',
+            textinfo='label+value',
+            textfont=dict(size=13),
+            texttemplate='%{label}: %{value:,.0f}<br>(%{percent})',
+            textposition='auto',
+            rotation=160
+        )],
+        'layout': go.Layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title={
+                'text': '<b>Gender Ratio In' + ' ' + str(value),
+
+                'y': 0.97,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'},
+            titlefont={
+                'color': 'rgb(50, 50, 50)',
+                'size': 15},
+            hovermode='x',
+            legend={
+                'orientation': 'h',
+                'bgcolor': '#F2F2F2',
+                'xanchor': 'center',
+                'yanchor': 'bottom',
+                'x': 0.5,
+                'y': -0.2
+            }
+
+        )
+    }
+@app.callback(Output('pie_chart2', 'figure'),
+              [Input('select_years', 'value')])
+def update_graph(value):
+    df8 = df.groupby(['year','sector'])['sid'].count().reset_index()
+    df9 = df8[df8['year'] == value]
+
+    return {
+        'data': [go.Pie(
+            labels=df9['sector'],
+            values=df9['sid'],
+            hoverinfo='label+percent',
+
+        )],
+        'layout': go.Layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title={
+                'text': '<b>Sectorwise Split In Parents Job In' + ' ' + str(value),
+
+                'y': 0.97,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'},
+            titlefont={
+                'color': 'rgb(50, 50, 50)',
+                'size': 14},
+            hovermode='x',
+            legend={
+                'orientation': 'h',
+                'bgcolor': '#F2F2F2',
+                'xanchor': 'center',
+                'yanchor': 'bottom',
+                'x': 0.5,
+                'y': -0.5
+            }
+
+        )
+    }
+@app.callback(Output('bar_graph3', 'figure'),
+              [Input('select_years', 'value')])
+def update_graph(value):
+    df10 = df.groupby(['quota', 'year'])['jee_perc'].max().reset_index()
+    df11 = df10[df10['year'] == value]
+
+    return {
+        'data': [
+            go.Bar(
+                x=df11['quota'],
+                y=df11['jee_perc'],
+                width=[0.5,0.5],
+                text=df11['jee_perc'],
+                texttemplate='%{text:,.2s}',
+                textposition='outside',
+                marker=dict(color='#38D56F'),
+                textfont=dict(
+                    family="sans-serif",
+                    size=12,
+                    color='black'),
+            )
+        ],
+        'layout': go.Layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title={
+                'text': '<b>Average Marks Scored By Minority And Non Minority Students in' + ' ' + str((value)),
+
+                'y': 0.98,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'},
+            titlefont={
+                'color': 'black',
+                'size': 15},
+            hovermode='closest',
+            margin=dict(t=30, r=70),
+            xaxis=dict(showline=True,
+                       showgrid=False,
+                       showticklabels=True,
+                       linecolor='black',
+                       linewidth=1,
+                       ticks='outside',
+                       tickfont=dict(
+                           family='Arial',
+                           size=12,
+                           color='black')
+
+                       ),
+
+            yaxis=dict(title='<b>Average marks (%)</b>',
+                       visible=True,
+                       color='black',
+                       showline=False,
+                       showgrid=True,
+                       )
+        )
+    }
+
+
+@app.callback(
+    Output('calculations', 'children'),
+    [Input('select_years', 'value')]
+)
+def display_data(value):
+    #This code first filters the dataframe df to only include rows where the year is 2019. Then, it groups the resulting dataframe by sector and counts the number of occurrences of sid in each group. The resulting dataframe df_genre has columns sector and sid.
+    #, the code uses idxmax() to find the row index of the row with the maximum value of sid, and then selects the sector value from that row using .loc[]. The resulting df_genre2 should be the sector with the highest count of sid for the year 2019.
+    df_year = df[df['year'] == value]
+
+    df_genre = df_year.groupby(['sector'])['sid'].count().reset_index()
+    df_genre2 = df_genre.loc[df_genre['sid'].idxmax(), 'sector']
+    df13=df_year.groupby(['stream', 'year'])['jee_perc'].max().reset_index()
+    df14=df13.loc[df_genre['sid'].idxmax(), 'jee_perc']
+    df15 = df_year.groupby(['stream', 'year'])['jee_perc'].mean().reset_index()
+    df16=df15.loc[df_genre['sid'].idxmax(), 'jee_perc']
+    df17 = df.groupby(['stream', 'year'])['parent_income'].mean().reset_index()
+    df18 = df17.loc[df_genre['sid'].idxmax(), 'parent_income']
+    df19 = df_year.groupby(['stream', 'year'])['sid'].count().reset_index()
+    df20=df19.loc[df_genre['sid'].idxmax(), 'stream']
+    df21 = df_year.groupby(['stream', 'year'])['sid'].count().reset_index()
+    df22 = df21.loc[df_genre['sid'].idxmax(), 'sid']
+    df23 = df_year.groupby(['stream', 'year'])['x_perc'].mean().reset_index()
+    df24 = df23.loc[df_genre['sid'].idxmax(), 'x_perc']
+    df25 = df_year.groupby(['stream', 'year'])['xii_perc'].mean().reset_index()
+    df26 = df25.loc[df_genre['sid'].idxmax(), 'xii_perc']
+    df27 = df_year.groupby(['stream', 'year'])['maths_xii'].mean().reset_index()
+    df28 = df27.loc[df_genre['sid'].idxmax(), 'maths_xii']
+    df29 = df_year.groupby(['stream', 'year'])['physics_xii'].mean().reset_index()
+    df30 = df29.loc[df_genre['sid'].idxmax(), 'physics_xii']
+    df31 = df_year.groupby(['stream', 'year'])['chem_xii'].mean().reset_index()
+    df32= df31.loc[df_genre['sid'].idxmax(), 'chem_xii']
+
+
+
+
+    # Format the data for display
+
+
+    # Return the formatted data as a table
+    return [
+        html.Table([
+            html.Thead([
+                html.Tr([
+                    html.Th('columns'),
+                    html.Th('Symbol'),
+                    html.Th('Information')
+                ], className='header_hover')
+            ]),
+            html.Tbody([
+                html.Tr([
+                    html.Td('Sector in which  most parents were employed'),
+                    html.Td(html.I(className='fa-solid fa-briefcase', style={'font-size': '150%'})),
+                    html.Td('{:s}'.format(df_genre2))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Highest percentile in jee mains'),
+                    html.Td(html.I(className='fa-solid fa-star', style={'font-size': '150%'})),
+    # You are trying to format a DataFrame df13 as a
+    # float
+    # using
+    # the
+    # '{0:,.2f}%'
+    # format
+    # string, which is causing
+    # the
+    # TypeError: unsupported
+    # format
+    # string
+    # passed
+    # to
+    # DataFrame.__format__
+    # error.
+    #
+    # To
+    # fix
+    # this, you
+    # should
+    # use
+    # the
+    # df14
+    # variable, which is the
+    # maximum
+    # value
+    # of
+    # jee_perc
+    # for the sector with the highest count of sid.Also, you should remove the % character from the format string since df14 is already a percentage:
+                    html.Td('{0:,.2f}%'.format(df14))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Average Percentile In Jee Mains'),
+                    html.Td(html.I(className='fa-solid fa-star-half-stroke', style={'font-size': '150%'})),
+
+                    html.Td('{0:,.2f}%'.format(df16))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Average Annual Parent Income'),
+                    html.Td(html.I(className='fa-sharp fa-solid fa-indian-rupee-sign', style={'font-size': '150%','padding':'5px'})),
+
+                    html.Td('₹{0:,.2f}'.format(df18))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Branch With Most Number Of Students'),
+                    html.Td(html.I(className='fa-sharp fa-solid fa-school',
+                                   style={'font-size': '150%', 'padding': '5px'})),
+
+                    html.Td('{:s}'.format(df20))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Most Number Of Students In A Branch'),
+                    html.Td(html.I(className='fa-sharp fa-solid fa-user',
+                                   style={'font-size': '150%', 'padding': '5px'})),
+
+                    html.Td('{0:,.2f}'.format(df22))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Average Marks Scored In Class xth'),
+                    html.Td(html.I(className='fa-sharp fa-solid fa-percent',
+                                   style={'font-size': '150%', 'padding': '5px'})),
+
+                    html.Td('{0:,.2f}%'.format(df24))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Average Marks Scored In Class xiith'),
+                    html.Td(html.I(className='fa-sharp fa-solid fa-crosshairs',
+                                   style={'font-size': '150%', 'padding': '5px'})),
+
+                    html.Td('{0:,.2f}%'.format(df26))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Average Marks Scored In Class xiith maths'),
+                    html.Td(html.I(className='fa-sharp fa-solid fa-calculator',
+                                   style={'font-size': '150%', 'padding': '5px'})),
+
+                    html.Td('{0:,.2f}%'.format(df28))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Average Marks Scored In Class xiith physics'),
+                    html.Td(html.I(className='fa-sharp fa-solid fa-atom',
+                                   style={'font-size': '150%', 'padding': '5px'})),
+
+                    html.Td('{0:,.2f}%'.format(df30))
+                ], className='hover_only_row'),
+                html.Tr([
+                    html.Td('Average Marks Scored In Class xiith chemistry'),
+                    html.Td(html.I(className='fa-sharp fa-solid fa-vial-circle-check',
+                                   style={'font-size': '150%', 'padding': '5px'})),
+
+                    html.Td('{0:,.2f}%'.format(df32))
+                ], className='hover_only_row'),
+            ])
+        ], className='table_style')
+    ]
 
 
 if __name__ == '__main__':
