@@ -1,20 +1,176 @@
-*{
-    font-family: "Montserrat", sans-serif;
+body {
+  background-color: #F2F2F2;
+  margin-top: 0%;
+  margin-left: 5%;
+  margin-right: 5%;
+  margin-bottom: 5%;
 }
 
-
-.header{
-    margin-top: 10px;
-    font-size: 1.5em;
+.mainContainer {
+  display: flex;
+  flex-direction: column;
 }
 
-.content{
-    font-size: 0.8em;
+.title_container {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   background-color: #9038D5;
+   /*height: 50px;*/
 }
 
-
-@media screen and (min-width: 700px){
-    .container{
-        font-size: 20px;
-    }
+.title_text {
+  display: flex;
+  flex-direction: row;
+  color: white;
 }
+
+.flex_display {
+  display: flex;
+}
+
+.create_container {
+  border: 1px solid #cccccc;
+  border-radius: 5px;
+  /*padding: 15px;*/
+}
+
+.container_slider {
+  background-color: white;
+  padding: 2px;
+}
+
+.fix_label {
+  font-size: 15px;
+  margin: 0;
+  padding: 10px;
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+  /*width: calc(100%- 40px);*/
+}
+
+.slider_component {
+  margin-bottom: 15px;
+  width: calc(100%- 40px);
+}
+
+.table_style {
+  width: 100%;
+  border-collapse: collapse;
+
+}
+
+.table_style Thead {
+  background-color:#333333;
+  color: white;
+  text-align: left;
+  padding-top: 11px;
+  padding-bottom: 11px;
+
+
+}
+
+.table_style Thead, .table_style Th, .table_style Td {
+  border: 1px solid #dddd;
+  padding: 7px;
+
+}
+
+.header_hover:hover {
+  background-color: #9038D5;
+  color: white;
+}
+
+.hover_only_row:hover {
+  background-color: #dddd;
+}
+
+.hover_only_row:nth-child(even) {
+  background-color: white;
+}
+
+.bar_graph_border {
+  border: 1px solid #cccccc;
+  /*margin-top: 20px;*/
+}
+
+.pie_graph_border {
+  border: 1px solid #cccccc;
+  /*margin-top: 35px;*/
+}
+
+.text_container {
+  margin-top: 20px;
+}
+
+.text_container1 {
+  margin-top: 10px;
+}
+
+.text_container2 {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.container_text_border {
+  border: 1px solid #cccccc;
+  margin-top: 10px;
+}
+
+.box_style {
+  /*width: 90%;*/
+  border-collapse: collapse;
+  /*margin-left: 35px;*/
+}
+
+.style1 {
+  /*width: 30%;*/
+  background-color: #eeee;
+  font-weight: bold;
+}
+
+.style2 {
+  width: 70%;
+  background-color: white;
+  font-weight: bold;
+}
+
+.box_style Td {
+  border: 1px solid #cccccc;
+  padding: 4px;
+}
+
+/* style the scroll bar*/
+::-webkit-scrollbar {
+  width: 10px !important;
+  display: block !important;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #F2F2F2 !important;
+  display: block !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #9A38D5;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #38D56F;
+}
+
+.rc-slider-dot-active {
+  border-color: #006fe6;
+  border: 2px solid #006fe6;
+}
+
+.rc-slider-handle {
+  border-color: #006fe6;
+  background-color: #006fe6;
+}
+
+.rc-slider-handle:hover {
+  border-color: orange;
+  background-color: red;
+}
+
