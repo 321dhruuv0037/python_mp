@@ -1,5 +1,10 @@
+import dash
 import dash_bootstrap_components.themes
+<<<<<<< Updated upstream
 from dash import Dash, html, dcc, dash, Output, Input
+=======
+from dash import Dash, dcc, html, Input, Output
+>>>>>>> Stashed changes
 import plotly.express as px
 import pandas as pd
 import plotly.graph_objs as go
@@ -10,8 +15,25 @@ from folium.plugins import HeatMap
 
 import navigation
 from dash_bootstrap_components import themes
+<<<<<<< Updated upstream
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+=======
+import dash_auth
+
+VALID_USERNAME_PASSWORD_PAIRS = {
+    'hello': 'world'
+}
+
+app = dash.Dash(__name__)
+server = app.server
+
+
+auth = dash_auth.BasicAuth(
+    app,
+    VALID_USERNAME_PASSWORD_PAIRS
+)
+>>>>>>> Stashed changes
 
 
 
