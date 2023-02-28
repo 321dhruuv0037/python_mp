@@ -3,7 +3,7 @@ import folium
 from folium.plugins import HeatMap
 
 # Read the CSV file into a Pandas DataFrame
-data = pd.read_csv('hmap.csv')
+data = pd.read_csv('coords.csv')
 
 # Create a map centered on a specific location
 m = folium.Map(location=[18.932245, 72.826439], zoom_start=6)
