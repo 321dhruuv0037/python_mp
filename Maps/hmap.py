@@ -4,11 +4,7 @@ import folium
 from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster, FeatureGroupSubGroup
 
-
-
-# Read the CSV file into a Pandas DataFrame
-# Read the CSV file
-df = pd.read_csv('coords.csv')
+df = pd.read_csv('Maps\coords.csv')
 
 # Group the data by location and count the number of students for each location
 data = df.groupby(['pincode','latitude', 'longitude'])['name'].count().reset_index()
