@@ -119,7 +119,7 @@ output_path = current_dir / "Ishikawa.jpeg"
 data = {'Low Results in Sem I': {'Low Percentile Admission': {'Low Minority Cutoffs':'Change in admission criterion'},
                     'Preparation Time': {'Less Time for preparation ': {'Irregularities in starting the semester':'','Late admissions':''}
                                },
-                    'Distractions':     {'College Fests': {'Social Assignments':'','Travelling Time':''}
+                    'Distractions':     {'College Fests': {'Social Media':'','Travelling Time':''}
                                },
                     'Incomplete Syllabus':  {'Lack of Coverage of Syllabus': {'Poor Teaching':''}
                               }
