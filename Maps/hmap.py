@@ -1,12 +1,46 @@
 import pandas as pd
 import folium
+
 from folium.plugins import HeatMap
+from folium.plugins import MarkerCluster, FeatureGroupSubGroup
+
+
 
 # Read the CSV file into a Pandas DataFrame
-data = pd.read_csv('coords.csv')
+# Read the CSV file
+df = pd.read_csv('coords.csv')
+
+# Group the data by location and count the number of students for each location
+data = df.groupby(['pincode','latitude', 'longitude'])['name'].count().reset_index()
+data.columns = ['pincode','latitude', 'longitude', 'number_of_students']
+
+
+
+
+
 
 # Create a map centered on a specific location
 m = folium.Map(location=[18.932245, 72.826439], zoom_start=6)
+
+marker_cluster = MarkerCluster().add_to(m)
+
+area_group = FeatureGroupSubGroup(marker_cluster, 'Area')
+
+# Filter the data for the area you're interested in
+area_data = data[(data['latitude'] >= 17.0) & (data['longitude'] >= 70.0) ]
+
+# Loop through the data and create a marker for each point
+for index, row in area_data.iterrows():
+    tooltip = "Number of students: {}".format(row['number_of_students'])
+    folium.Marker(location=[row['latitude'], row['longitude']], tooltip=tooltip).add_to(area_group)
+
+    # Add the FeatureGroupSubGroup to the map
+area_group.add_to(m)
+
+
+
+
+
 
 # Create a heatmap layer from the data
 heat_data = [[row['latitude'], row['longitude']] for index, row in data.iterrows()]
@@ -98,5 +132,9 @@ folium.LayerControl(overlay={
 
 
 
+
 # Save the map to an HTML file
 m.save('heatmap.html')
+
+
+
