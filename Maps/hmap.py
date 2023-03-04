@@ -4,11 +4,12 @@ import folium
 from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster, FeatureGroupSubGroup
 
-df = pd.read_csv('Maps\coords.csv')
-
+#df = pd.read_csv('.\coords.csv')
+df = pd.read_csv('..\slider.csv')
 # Group the data by location and count the number of students for each location
-data = df.groupby(['pincode','latitude', 'longitude'])['name'].count().reset_index()
-data.columns = ['pincode','latitude', 'longitude', 'number_of_students']
+data = df.groupby(['name','latitude', 'longitude'])['pincode'].count().reset_index()
+# .reset_index()
+data.columns = ['name','latitude', 'longitude', 'number_of_students']
 
 
 
@@ -23,7 +24,7 @@ marker_cluster = MarkerCluster().add_to(m)
 area_group = FeatureGroupSubGroup(marker_cluster, 'Area')
 
 # Filter the data for the area you're interested in
-area_data = data[(data['latitude'] >= 17.0) & (data['longitude'] >= 70.0) ]
+area_data = data[(data['latitude'] >= 0.0) & (data['longitude'] >= 0.0) ]
 
 # Loop through the data and create a marker for each point
 for index, row in area_data.iterrows():
