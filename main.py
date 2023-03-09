@@ -1,17 +1,28 @@
+import math
+
 import dash_bootstrap_components.themes
+import seaborn as sns
 from dash import Dash, html, dcc, dash, Output, Input
 import plotly.express as px
 import pandas as pd
 import plotly.graph_objs as go
-import matplotlib as plot
+import matplotlib as plt
 import folium
 import dash_bootstrap_components as dbc
 from folium.plugins import HeatMap
+from matplotlib import pyplot as plt
 
 import navigation
+import numpy as np
 from dash_bootstrap_components import themes
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
+import pandas as pd
+import folium
+
+from folium.plugins import HeatMap
+from folium.plugins import MarkerCluster, FeatureGroupSubGroup
+
 
 
 
@@ -72,106 +83,147 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # newdf=pd.DataFrame(lm.coef_,X.columns,columns=['jee percentile'])
 # abcd=newdf.to_html()
 
-df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
+df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdone.csv")
 year_list = list(df['year'].unique())
+print(year_list)
+
+options = [
+    {'label': 'COMPS', 'value': 'COMPS'},
+    {'label': 'EXTC', 'value': 'EXTC'},
+    {'label': 'MECH', 'value': 'MECH'},
+    {'label': 'IT', 'value': 'IT'},
+    {'label':'ALL BRANCHES','value':'none'}
+]
+options1 = [
+    {'label': 'NO OF STUDENTS', 'value': 'sid'},
+    {'label': 'XTH PERCENTAGE', 'value': 'x_perc'},
+    {'label': 'XII TH PERCENTAGE', 'value': 'xii_perc'},
+    {'label': 'JEE PERCENTILE', 'value': 'jee_perc'}
+]
+
+options2 = [
+    {'label': 'NO OF STUDENTS', 'value': 'sid'},
+    {'label': 'XTH PERCENTAGE', 'value': 'x_perc'},
+    {'label': 'XII TH PERCENTAGE', 'value': 'xii_perc'},
+    {'label': 'JEE PERCENTILE', 'value': 'jee_perc'}
+]
+df = pd.read_csv('slider.csv')
+max_df = df.groupby(['year', 'stream'])['jee_perc'].mean().reset_index()
+fig1 = px.line(max_df, x='year', y='jee_perc', color='stream', title='Average Percentile by Year and Stream',hover_data=['jee_perc', 'year'],labels={'jee_perc': 'JEE Percentile'})
+fig1.update_layout(xaxis=dict(tickmode='linear', dtick=1))
+highest = max_df.loc[max_df['jee_perc'].idxmax()]
+formatted_percentile = "{:.2f}".format(highest['jee_perc'])
+formatted_year = int(highest['year'])
+highest_branch = highest['stream']
+filtered_df = df[df['year'] == '2021']
+corr = filtered_df['sid'].corr(filtered_df['x_perc'])
+print("Correlation between SID and X percentile: {:.2f}".format(corr))
+
+# Add an annotation to the graph with the highest percentile value and year
+best_stream = highest['stream']
+
+print(f"The best performing stream is {best_stream}")
+# Group the data by stream and calculate the percentage change for each stream
+stream_df = df.groupby('stream')['jee_perc'].pct_change().reset_index()
+# Find the stream with the highest percentage growth
 # Read the CSV file into a Pandas DataFrame
-data = pd.read_csv('heatmap.csv')
-
-# Create a map centered on a specific location
-m = folium.Map(location=[18.932245, 72.826439], zoom_start=10)
-
-# Create a heatmap layer from the data
-heat_data = [[row['latitude'], row['longitude']] for index, row in data.iterrows()]
-heatmap = HeatMap(heat_data, name='Heatmap')
-
-# Add the heatmap layer to the map
-heatmap.add_to(m)
-#text marker
-
-
-# Add a layer control to the map
-folium.LayerControl().add_to(m)
-#western line
-folium.PolyLine([(18.9354, 72.8262),(18.9442, 72.8239),(18.9536, 72.8174),(18.9591, 72.8132),(18.9696, 72.8196),(18.9827, 72.8193)
-,(19.0088, 72.8308)
-,(19.0111, 72.8403)
- ,(19.0173, 72.8426)
- ,(19.0271, 72.8464)
- ,(19.0395, 72.8445)
- ,(19.0544, 72.8402)
- ,(19.0686, 72.8394)
- ,(19.0814, 72.8416)
- ,(19.0972, 72.8445)
- ,(19.1197, 72.8464)
-,(19.1365, 72.8497)
-,(19.1542, 72.8534)
-,(19.1647, 72.8491)
-,(19.1867, 72.8486)
-,(19.204431413672715, 72.85164270837505)
-,(19.2292, 72.8572)
-,(19.2502, 72.8592)
- ,(19.2813, 72.8563)
- ,(19.3103, 72.8517)
- ,(19.3465, 72.8545)
- ,(19.3802, 72.8395)
- ,(19.4186, 72.8179)
-,(19.455235541869268, 72.81211431208968),(19.519096449558383, 72.85036910889094),(19.577117893783946, 72.82171623907293),(19.6982688067134, 72.772179156276),(19.990148370578478, 72.74472504650069)],color="green",tooltip="Western Line",weight=3).add_to(m)
-
-folium.Marker(location=[19.455134379429648, 72.81202848139804],
-              popup=folium.Popup('<i>Western Line</i>'),
-              tooltip='Western Line',
-              icon=folium.DivIcon(html="""Western Line""",
-                                  class_name="mapText"),
-              ).add_to(m)
-
-# inject html into the map html
-m.get_root().html.add_child(folium.Element("""
-<style>
-.mapText {
-    white-space: nowrap;
-    color:green;
-    font-size:medium
-}
-</style>
-"""))
-#csmt to kasara
-folium.PolyLine([(18.943888,72.835991),(18.994736760414902, 72.83299728510069),(19.020330448510123, 72.84365954445657),(19.066573611668673, 72.87980951393833),(19.085515812592636, 72.90727222557408),(19.18659041458438, 72.97536110837471),(19.19042930746032, 73.02342671394041),(19.18871434223293, 73.04228938324867),(19.23571726600612, 73.13078415340435),(19.29602463586944, 73.20378245441398),(19.439762665560814, 73.30787021023416),(19.64852859016493, 73.47304712558349)],color="blue",tooltip="Central Line").add_to(m)
-#kalyan to khopoli
-folium.PolyLine([(19.23571726600612, 73.13078415340435),(19.16699440588468, 73.23863896084042),(18.91283348037467, 73.3207955409171),(18.789286786303602, 73.34539545440576)],color="blue",tooltip="Central Line").add_to(m)
-folium.Marker(location=[19.23644145356165, 73.13028936975887],
-              popup=folium.Popup('<i>Central Line</i>'),
-              tooltip='Central Line',
-              icon=folium.DivIcon(html="""Central Line""",
-                                  class_name="mapText"),
-              ).add_to(m)
-#harbour csmt to panvel
-folium.PolyLine([(18.940295750335533, 72.83575288324467),(18.962173966262736, 72.83900556789912),(18.988393871718458, 72.84329590608344),(19.0162622023617, 72.85879774048796),(19.067444858086915, 72.8800346016453),(19.048343621374624, 72.93196402557346),(19.06339879342969, 72.99882074488211),(19.055727544411585, 73.017959166992),(19.02220959140532, 73.0189194026994),(19.01947799290236, 73.03948562689445),(19.02666691178611, 73.05961378456648),(19.008516434583814, 73.09459223336893),(18.992155097791116, 73.12093264019435)],color="yellow",tooltip="Harbour Line").add_to(m)
-#harbor wadala to goregaon
-folium.PolyLine([(19.0162622023617, 72.85879774048796),(19.041049756832933, 72.84699720172428),(19.056530893119035, 72.83989345615814),(19.068513041300847, 72.8399588909093),(19.164918718417084, 72.84922634833158)],color="yellow",tooltip="Harbour Line").add_to(m)
-#metro line 9 gkp-vsv
-folium.PolyLine([(19.08680000156715, 72.90811058324704),(19.09658860912144, 72.89500762742944),(19.10809761674883, 72.87981916604637),(19.121114420719188, 72.8482312390653),(19.130568159099553, 72.82134052371956)],color="cyan",tooltip="Metro Line 9").add_to(m)
-#thane vashi line
-folium.PolyLine([(19.18675254065755, 72.97540402372054),(19.176037824932855, 72.99472545441198),(19.103518084649536, 73.01215414724949),(19.07580016180758, 73.01782716790103),(19.06339879342969, 72.99882074488211)],color="purple",tooltip="TransHarbour Line").add_to(m)
-
-# inject html into the map html
-m.get_root().html.add_child(folium.Element("""
-<style>
-.mapText {
-    white-space: nowrap;
-    color:green;
-    font-size:medium
-}
-</style>
-"""))
-folium.LayerControl(overlay={
-    'Markers': '<span style="color: green">Western Line</span> | <span style="color: blue">Central Line</span> | <span style="color: yellow">Harbour Line</span>',
-}).add_to(m)
-
-
-
-
-# Save the map to an HTML file
-m.save('heatmap.html')
+# data = pd.read_csv('heatmap.csv')
+#
+# # Create a map centered on a specific location
+# m = folium.Map(location=[18.932245, 72.826439], zoom_start=10)
+#
+# # Create a heatmap layer from the data
+# heat_data = [[row['latitude'], row['longitude']] for index, row in data.iterrows()]
+# heatmap = HeatMap(heat_data, name='Heatmap')
+#
+# # Add the heatmap layer to the map
+# heatmap.add_to(m)
+# #text marker
+#
+#
+# # Add a layer control to the map
+# folium.LayerControl().add_to(m)
+# #western line
+# folium.PolyLine([(18.9354, 72.8262),(18.9442, 72.8239),(18.9536, 72.8174),(18.9591, 72.8132),(18.9696, 72.8196),(18.9827, 72.8193)
+# ,(19.0088, 72.8308)
+# ,(19.0111, 72.8403)
+#  ,(19.0173, 72.8426)
+#  ,(19.0271, 72.8464)
+#  ,(19.0395, 72.8445)
+#  ,(19.0544, 72.8402)
+#  ,(19.0686, 72.8394)
+#  ,(19.0814, 72.8416)
+#  ,(19.0972, 72.8445)
+#  ,(19.1197, 72.8464)
+# ,(19.1365, 72.8497)
+# ,(19.1542, 72.8534)
+# ,(19.1647, 72.8491)
+# ,(19.1867, 72.8486)
+# ,(19.204431413672715, 72.85164270837505)
+# ,(19.2292, 72.8572)
+# ,(19.2502, 72.8592)
+#  ,(19.2813, 72.8563)
+#  ,(19.3103, 72.8517)
+#  ,(19.3465, 72.8545)
+#  ,(19.3802, 72.8395)
+#  ,(19.4186, 72.8179)
+# ,(19.455235541869268, 72.81211431208968),(19.519096449558383, 72.85036910889094),(19.577117893783946, 72.82171623907293),(19.6982688067134, 72.772179156276),(19.990148370578478, 72.74472504650069)],color="green",tooltip="Western Line",weight=3).add_to(m)
+#
+# folium.Marker(location=[19.455134379429648, 72.81202848139804],
+#               popup=folium.Popup('<i>Western Line</i>'),
+#               tooltip='Western Line',
+#               icon=folium.DivIcon(html="""Western Line""",
+#                                   class_name="mapText"),
+#               ).add_to(m)
+#
+# # inject html into the map html
+# m.get_root().html.add_child(folium.Element("""
+# <style>
+# .mapText {
+#     white-space: nowrap;
+#     color:green;
+#     font-size:medium
+# }
+# </style>
+# """))
+# #csmt to kasara
+# folium.PolyLine([(18.943888,72.835991),(18.994736760414902, 72.83299728510069),(19.020330448510123, 72.84365954445657),(19.066573611668673, 72.87980951393833),(19.085515812592636, 72.90727222557408),(19.18659041458438, 72.97536110837471),(19.19042930746032, 73.02342671394041),(19.18871434223293, 73.04228938324867),(19.23571726600612, 73.13078415340435),(19.29602463586944, 73.20378245441398),(19.439762665560814, 73.30787021023416),(19.64852859016493, 73.47304712558349)],color="blue",tooltip="Central Line").add_to(m)
+# #kalyan to khopoli
+# folium.PolyLine([(19.23571726600612, 73.13078415340435),(19.16699440588468, 73.23863896084042),(18.91283348037467, 73.3207955409171),(18.789286786303602, 73.34539545440576)],color="blue",tooltip="Central Line").add_to(m)
+# folium.Marker(location=[19.23644145356165, 73.13028936975887],
+#               popup=folium.Popup('<i>Central Line</i>'),
+#               tooltip='Central Line',
+#               icon=folium.DivIcon(html="""Central Line""",
+#                                   class_name="mapText"),
+#               ).add_to(m)
+# #harbour csmt to panvel
+# folium.PolyLine([(18.940295750335533, 72.83575288324467),(18.962173966262736, 72.83900556789912),(18.988393871718458, 72.84329590608344),(19.0162622023617, 72.85879774048796),(19.067444858086915, 72.8800346016453),(19.048343621374624, 72.93196402557346),(19.06339879342969, 72.99882074488211),(19.055727544411585, 73.017959166992),(19.02220959140532, 73.0189194026994),(19.01947799290236, 73.03948562689445),(19.02666691178611, 73.05961378456648),(19.008516434583814, 73.09459223336893),(18.992155097791116, 73.12093264019435)],color="yellow",tooltip="Harbour Line").add_to(m)
+# #harbor wadala to goregaon
+# folium.PolyLine([(19.0162622023617, 72.85879774048796),(19.041049756832933, 72.84699720172428),(19.056530893119035, 72.83989345615814),(19.068513041300847, 72.8399588909093),(19.164918718417084, 72.84922634833158)],color="yellow",tooltip="Harbour Line").add_to(m)
+# #metro line 9 gkp-vsv
+# folium.PolyLine([(19.08680000156715, 72.90811058324704),(19.09658860912144, 72.89500762742944),(19.10809761674883, 72.87981916604637),(19.121114420719188, 72.8482312390653),(19.130568159099553, 72.82134052371956)],color="cyan",tooltip="Metro Line 9").add_to(m)
+# #thane vashi line
+# folium.PolyLine([(19.18675254065755, 72.97540402372054),(19.176037824932855, 72.99472545441198),(19.103518084649536, 73.01215414724949),(19.07580016180758, 73.01782716790103),(19.06339879342969, 72.99882074488211)],color="purple",tooltip="TransHarbour Line").add_to(m)
+#
+# # inject html into the map html
+# m.get_root().html.add_child(folium.Element("""
+# <style>
+# .mapText {
+#     white-space: nowrap;
+#     color:green;
+#     font-size:medium
+# }
+# </style>
+# """))
+# folium.LayerControl(overlay={
+#     'Markers': '<span style="color: green">Western Line</span> | <span style="color: blue">Central Line</span> | <span style="color: yellow">Harbour Line</span>',
+# }).add_to(m)
+#
+#
+#
+#
+# # Save the map to an HTML file
+# m.save('heatmap.html')
 
 
 
@@ -232,16 +284,25 @@ html.Div([
             html.Div([
                 html.P('Year:', className='fix_label', style={'color': 'black',
                                                               'margin-top': '15px'}),
-                dcc.Slider(id='select_years',
-                           min=year_list[0],
-                           max=year_list[-1],
-                           value=year_list[1],
-                           step=1,
-                           included=False,
-                           updatemode='drag',
-                           tooltip={'always_visible': True},
-                           marks={str(yrs): str(yrs) for yrs in range(year_list[0], year_list[-1], 2)},
-                           className='slider_component')
+
+                 # # dcc.Slider(id='select_years',
+                 # #           min=year_list[0],
+                 # #           max=year_list[-1],
+                 # #           value=year_list[1],
+                 # #           step=1,
+                 # #           included=False,
+                 # #           updatemode='drag',
+                 # #           tooltip={'always_visible': True},
+                 # #           marks={str(yrs): str(yrs) for yrs in range(year_list[0], year_list[-1], 2)},
+                 #           className='slider_component'),
+                dcc.Slider(
+                    id='select_years',
+                    min=2018,
+                    max=2021,
+                    step=None,
+                    value=2021,
+                    marks={i: str(i) for i in range(2018, 2022)}
+                ),
             ], className='container_slider'),
 dcc.Graph(id='bar_graph',
                       config={'displayModeBar': 'hover'},
@@ -287,6 +348,104 @@ dcc.Graph(id='bar_graph',
         ], width=6, style={'padding': '10px'})
     ]),
     dbc.Row([
+        dbc.Row([
+            html.P(dcc.Markdown(
+                """please select the **branch**"""
+            ), style={'line-height': '1', 'font-size': '25px','margin-bottom': '20px'}),
+
+            dcc.Dropdown(
+                id='my-dropdown',
+                options=options,
+                value='IT',
+                className='dropdown',
+                style={'width':'400px'}
+
+            ),
+            html.Div(id='selected-branch')
+        ],className='my-dropdown1'),
+    ]),
+    dbc.Row([
+        dbc.Col([
+            dcc.Graph(figure=fig1),
+        ], width=9),
+
+        dbc.Col([
+           html.Div([
+               html.H1(children='Analysis',style={'justify-content':'center','text-align': 'center','display': 'flex'}),
+
+               # Display the best performing stream
+               html.Div(
+                   children=[
+                       f"The best performing stream is {best_stream}",
+                       html.I(className='fa-sharp fa-solid fa-user-tie',style={'padding':'10px'})
+                   ],
+                   style={'padding-top': '20px', 'font-size': '20px'}
+               ),
+               html.Div(
+                   children=[
+                       f"Highest average JEE percentile: {formatted_percentile} ",
+                       html.Br(),
+                       f"Year: ({formatted_year}) for {highest_branch} ",
+                       html.I(className='fas fa-fire')
+                   ]
+               ,style={'padding-top':'5px','font-size':'20px'})
+           ]),
+        ],className='card',width=3),
+    ],style={'padding':'20px'}),
+    html.Div([
+html.Div(
+    [
+        html.Img(src="assets/logo3.png", style={'display': 'block', 'margin': 'auto'})
+    ],style={'text-align': 'center','padding':'20px'}
+),
+dbc.Row([
+        dbc.Col([
+            html.P("Select the first Axis",style={'font-size':'20px'}),
+            dcc.Dropdown(
+                id='my-dropdown1',
+                className='dropdown',
+                options=options1,
+                value='sid',
+
+            ),
+        ]),
+        dbc.Col([
+            html.P("Select the second Axis", style={'font-size': '20px'}),
+            dcc.Dropdown(
+                id='my-dropdown2',
+                options=options2,
+                className='dropdown',
+                value='x_perc',
+
+            ),
+        ]),
+        dbc.Col([
+            html.P("Select the Branch", style={'font-size': '20px'}),
+            dcc.Dropdown(
+                id='my-dropdown3',
+                options=options,
+                value='IT',
+                className='dropdown',
+                style={'width': '400px'}
+
+            ),
+        ]),
+        dbc.Col([
+                html.P("Select the Year", style={'font-size': '20px'}),
+                    dcc.Slider(
+                        id='my-slider',
+                        min=2018,
+                        max=2021,
+                        step=None,
+                        value=2021,
+                        marks={i: str(i) for i in range(2018, 2022)}
+                    ),
+                ]),
+        dcc.Graph(id='graph')
+
+    ]),
+    ],className='graph_generator',style={'border':'2px inset black','background-color':'#ECF0F1'}),
+    dbc.Row([
         html.P(dcc.Markdown(
             """
             **Below map** shows the distribution of Students **accross** the city of ***Mumbai***
@@ -295,7 +454,47 @@ dcc.Graph(id='bar_graph',
                   'margin-left':'300px','margin-bottom': '20px'}),
         html.Iframe(id='maps', srcDoc=open('heatmap.html', 'r').read(), width='100%', height='600',style={'border':'5px solid black'}),
     ],style={'padding':'20px'}),
-html.Footer(className='text-center text-lg-start text-muted', style={'text-align': 'left', 'background-color': '#333333'}, children=[
+    dbc.Row([
+        html.Div(id='slider-output')
+    ]),
+   html.Div([
+       html.H1("Data Analysis and Predictions", style={'margin-left': '300px', 'padding': '10px','font-size':'60px'}),
+       dbc.Row([
+           dbc.Col([
+               html.Div(id='MachineLearningAnalysis'),
+               html.P(dcc.Markdown(
+                   """
+                   **Below ** is  the analysis of Students **data** for the above ***table***
+                   """
+               ),className="text1"),
+               html.Div(id='MachineLearningAnalysis2',className="MachineLearningAnalysis2"),
+           ],className='MachineLearningAnalysis'),
+           dbc.Col([
+               dbc.Card(dcc.Graph(id='heatmap'))
+           ],className='heatmap'),
+
+       ]),
+        dbc.Row([
+            dbc.Col(
+                html.Div(
+                    [
+                        html.H2("Change the background", className="display-3"),
+                        html.Hr(className="my-2"),
+                        html.P(
+                            "Swap the background-color utility and add a `.text-*` color "
+                            "utility to mix up the look."
+                        ),
+                        dbc.Button("Example Button", color="light", outline=True),
+                    ],
+                    className="h-100 p-5 text-white bg-dark rounded-3",
+                ),
+                md=6,
+            ),
+        ]),
+
+
+   ],className='Data_analysis'),
+html.Footer(className=' footer text-center text-lg-start text-muted', style={'text-align': 'left', 'background-color': '#333333'}, children=[
         html.Section(className='', style={'padding': '5px'}, children=[
             html.Div(className='container text-center text-md-start mt-5', children=[
                 html.Div(className='row mt-3', children=[
@@ -608,148 +807,461 @@ def display_data(value):
 
     df_genre = df_year.groupby(['sector'])['sid'].count().reset_index()
     df_genre2 = df_genre.loc[df_genre['sid'].idxmax(), 'sector']
-    df13=df_year.groupby(['stream', 'year'])['jee_perc'].max().reset_index()
-    df14=df13.loc[df_genre['sid'].idxmax(), 'jee_perc']
+    df13 = df_year.groupby(['stream', 'year'])['jee_perc'].max().reset_index()
+    df14 = df13.loc[df13['jee_perc'].idxmax(), 'jee_perc']
     df15 = df_year.groupby(['stream', 'year'])['jee_perc'].mean().reset_index()
-    df16=df15.loc[df_genre['sid'].idxmax(), 'jee_perc']
+    df16 = df15.loc[df15['jee_perc'].idxmax(), 'jee_perc']
     df17 = df.groupby(['stream', 'year'])['parent_income'].mean().reset_index()
-    df18 = df17.loc[df_genre['sid'].idxmax(), 'parent_income']
+    df18 = df17.loc[df17['parent_income'].idxmax(), 'parent_income']
     df19 = df_year.groupby(['stream', 'year'])['sid'].count().reset_index()
-    df20=df19.loc[df_genre['sid'].idxmax(), 'stream']
+    df20 = df19.loc[df19['sid'].idxmax(), 'stream']
     df21 = df_year.groupby(['stream', 'year'])['sid'].count().reset_index()
-    df22 = df21.loc[df_genre['sid'].idxmax(), 'sid']
+    df22 = df21.loc[df21['sid'].idxmax(), 'sid']
     df23 = df_year.groupby(['stream', 'year'])['x_perc'].mean().reset_index()
-    df24 = df23.loc[df_genre['sid'].idxmax(), 'x_perc']
+    df24 = df23.loc[df23['x_perc'].idxmax(), 'x_perc']
     df25 = df_year.groupby(['stream', 'year'])['xii_perc'].mean().reset_index()
-    df26 = df25.loc[df_genre['sid'].idxmax(), 'xii_perc']
+    df26 = df25.loc[df25['xii_perc'].idxmax(), 'xii_perc']
     df27 = df_year.groupby(['stream', 'year'])['maths_xii'].mean().reset_index()
-    df28 = df27.loc[df_genre['sid'].idxmax(), 'maths_xii']
+    df28 = df27.loc[df27['maths_xii'].idxmax(), 'maths_xii']
     df29 = df_year.groupby(['stream', 'year'])['physics_xii'].mean().reset_index()
-    df30 = df29.loc[df_genre['sid'].idxmax(), 'physics_xii']
+    df30 = df29.loc[df29['physics_xii'].idxmax(), 'physics_xii']
     df31 = df_year.groupby(['stream', 'year'])['chem_xii'].mean().reset_index()
-    df32= df31.loc[df_genre['sid'].idxmax(), 'chem_xii']
-
-
-
+    df32 = df31.loc[df31['chem_xii'].idxmax(), 'chem_xii']
 
     # Format the data for display
 
-
     # Return the formatted data as a table
-    return [
-        html.Table([
-            html.Thead([
-                html.Tr([
-                    html.Th('columns'),
-                    html.Th('Symbol'),
-                    html.Th('Information')
-                ], className='header_hover')
-            ]),
-            html.Tbody([
-                html.Tr([
-                    html.Td('Sector in which  most parents were employed'),
-                    html.Td(html.I(className='fa-solid fa-briefcase', style={'font-size': '150%'})),
-                    html.Td('{:s}'.format(df_genre2))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Highest percentile in jee mains'),
-                    html.Td(html.I(className='fa-solid fa-star', style={'font-size': '150%'})),
-    # You are trying to format a DataFrame df13 as a
-    # float
-    # using
-    # the
-    # '{0:,.2f}%'
-    # format
-    # string, which is causing
-    # the
-    # TypeError: unsupported
-    # format
-    # string
-    # passed
-    # to
-    # DataFrame.__format__
-    # error.
-    #
-    # To
-    # fix
-    # this, you
-    # should
-    # use
-    # the
-    # df14
-    # variable, which is the
-    # maximum
-    # value
-    # of
-    # jee_perc
-    # for the sector with the highest count of sid.Also, you should remove the % character from the format string since df14 is already a percentage:
-                    html.Td('{0:,.2f}%'.format(df14))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Average Percentile In Jee Mains'),
-                    html.Td(html.I(className='fa-solid fa-star-half-stroke', style={'font-size': '150%'})),
+    return [html.Table(
+        [html.Thead([html.Tr([html.Th('columns'), html.Th('Symbol'), html.Th('Information')], className='header_hover')
+                     ]),
+         html.Tbody([
+             html.Tr([
+                 html.Td('Sector in which most parents were employed'),
+                 html.Td(html.I(className='fa-solid fa-briefcase', style={'font-size': '150%'})),
+                 html.Td('{:s}'.format(df_genre2))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Highest percentile in jee mains'),
+                 html.Td(html.I(className='fa-solid fa-star', style={'font-size': '150%'})),
+                 html.Td('{0:,.2f}'.format(df14))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Average Percentile In Jee Mains'),
+                 html.Td(html.I(className='fa-solid fa-star-half-stroke', style={'font-size': '150%'})),
 
-                    html.Td('{0:,.2f}%'.format(df16))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Average Annual Parent Income'),
-                    html.Td(html.I(className='fa-sharp fa-solid fa-indian-rupee-sign', style={'font-size': '150%','padding':'5px'})),
+                 html.Td('{0:,.2f}%'.format(df16))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Average Annual Parent Income'),
+                 html.Td(html.I(className='fa-sharp fa-solid fa-indian-rupee-sign',
+                                style={'font-size': '150%', 'padding': '5px'})),
 
-                    html.Td('₹{0:,.2f}'.format(df18))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Branch With Most Number Of Students'),
-                    html.Td(html.I(className='fa-sharp fa-solid fa-school',
-                                   style={'font-size': '150%', 'padding': '5px'})),
+                 html.Td('₹{0:,.2f}'.format(df18))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Branch With Most Number Of Students'),
+                 html.Td(html.I(className='fa-sharp fa-solid fa-school',
+                                style={'font-size': '150%', 'padding': '5px'})),
 
-                    html.Td('{:s}'.format(df20))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Most Number Of Students In A Branch'),
-                    html.Td(html.I(className='fa-sharp fa-solid fa-user',
-                                   style={'font-size': '150%', 'padding': '5px'})),
+                 html.Td('{:s}'.format(df20))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Most Number Of Students In A Branch'),
+                 html.Td(html.I(className='fa-sharp fa-solid fa-user',
+                                style={'font-size': '150%', 'padding': '5px'})),
 
-                    html.Td('{0:,.2f}'.format(df22))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Average Marks Scored In Class xth'),
-                    html.Td(html.I(className='fa-sharp fa-solid fa-percent',
-                                   style={'font-size': '150%', 'padding': '5px'})),
+                 html.Td('{0:,.2f}'.format(df22))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Average Marks Scored In Class xth'),
+                 html.Td(html.I(className='fa-sharp fa-solid fa-percent',
+                                style={'font-size': '150%', 'padding': '5px'})),
 
-                    html.Td('{0:,.2f}%'.format(df24))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Average Marks Scored In Class xiith'),
-                    html.Td(html.I(className='fa-sharp fa-solid fa-crosshairs',
-                                   style={'font-size': '150%', 'padding': '5px'})),
+                 html.Td('{0:,.2f}%'.format(df24))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Average Marks Scored In Class xiith'),
+                 html.Td(html.I(className='fa-sharp fa-solid fa-crosshairs',
+                                style={'font-size': '150%', 'padding': '5px'})),
 
-                    html.Td('{0:,.2f}%'.format(df26))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Average Marks Scored In Class xiith maths'),
-                    html.Td(html.I(className='fa-sharp fa-solid fa-calculator',
-                                   style={'font-size': '150%', 'padding': '5px'})),
+                 html.Td('{0:,.2f}%'.format(df26))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Average Marks Scored In Class xiith maths'),
+                 html.Td(html.I(className='fa-sharp fa-solid fa-calculator',
+                                style={'font-size': '150%', 'padding': '5px'})),
 
-                    html.Td('{0:,.2f}%'.format(df28))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Average Marks Scored In Class xiith physics'),
-                    html.Td(html.I(className='fa-sharp fa-solid fa-atom',
-                                   style={'font-size': '150%', 'padding': '5px'})),
+                 html.Td('{0:,.2f}%'.format(df28))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Average Marks Scored In Class xiith physics'),
+                 html.Td(html.I(className='fa-sharp fa-solid fa-atom',
+                                style={'font-size': '150%', 'padding': '5px'})),
 
-                    html.Td('{0:,.2f}%'.format(df30))
-                ], className='hover_only_row'),
-                html.Tr([
-                    html.Td('Average Marks Scored In Class xiith chemistry'),
-                    html.Td(html.I(className='fa-sharp fa-solid fa-vial-circle-check',
-                                   style={'font-size': '150%', 'padding': '5px'})),
+                 html.Td('{0:,.2f}%'.format(df30))
+             ], className='hover_only_row'),
+             html.Tr([
+                 html.Td('Average Marks Scored In Class xiith chemistry'),
+                 html.Td(html.I(className='fa-sharp fa-solid fa-vial-circle-check',
+                                style={'font-size': '150%', 'padding': '5px'})),
 
-                    html.Td('{0:,.2f}%'.format(df32))
-                ], className='hover_only_row'),
-            ])
-        ], className='table_style')
+                 html.Td('{0:,.2f}%'.format(df32))
+             ], className='hover_only_row'),
+         ])
+         ], className='table_style')
     ]
+@app.callback(
+    Output('MachineLearningAnalysis', 'children'),
+    [Input('select_years', 'value')]
+)
+def display_data(value):
+    #This code first filters the dataframe df to only include rows where the year is 2019. Then, it groups the resulting dataframe by sector and counts the number of occurrences of sid in each group. The resulting dataframe df_genre has columns sector and sid.
+    #, the code uses idxmax() to find the row index of the row with the maximum value of sid, and then selects the sector value from that row using .loc[]. The resulting df_genre2 should be the sector with the highest count of sid for the year 2019.
+    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdone.csv")
+    df_year = df[df['year'] == value]
+    X = df_year[['x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii']]
+    Y = df_year['jee_perc']
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=101)
+    lm = LinearRegression()
+    lm.fit(X_train, Y_train)
+    random_names = ['xth percentage', 'xii th percentage', 'cet percentage', 'physics xii th percentage',
+                    ' chemistry xii th percentage', 'maths xii th percentage']
+    coef_names = dict(zip(X.columns, random_names))
+    df = pd.DataFrame(lm.coef_, index=[coef_names[col] for col in X.columns], columns=['JEE Percentile'])
+    df.columns = ['JEE Percentile']
+
+    return [html.Table([html.Thead(html.Tr([html.Th(col) for col in df.columns])
+                                   ),
+                        html.Tbody([
+                            html.Tr([
+                                html.Td(df.index[i]),
+                                html.Td("{:.2f}".format(df['JEE Percentile'][i]))
+                            ]) for i in range(len(df))
+                        ], className='hover_only_row')
+                        ], className='table_style')
+            ]
+
+@app.callback(
+    Output('heatmap', 'figure'),
+    [Input('select_years', 'value')]
+)
+def update_heatmap(selected_columns):
+    # Get selected range of columns
 
 
+    # Create correlation matrix
+    corr_matrix = df.corr()
+
+    # Create heatmap trace
+    trace = go.Heatmap(
+        x=corr_matrix.columns,
+        y=corr_matrix.columns[::-1],
+        z=corr_matrix.values[::-1],
+        colorscale='RdBu',
+        colorbar=dict(title='Correlation')
+    )
+
+    # Set layout
+    layout = go.Layout(
+        title='Heatmap of Correlation',
+        xaxis=dict(title='Columns'),
+        yaxis=dict(title='Columns')
+    )
+
+    # Create figure
+    fig = go.Figure(data=[trace], layout=layout)
+
+    return fig
+
+
+@app.callback(
+    Output('MachineLearningAnalysis2', 'children'),
+    [Input('select_years', 'value')]
+)
+def display_data(value):
+    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdone.csv")
+    df_year = df[df['year'] == value]
+    X = df_year[['x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii']]
+    Y = df_year['jee_perc']
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=101)
+    lm = LinearRegression()
+    lm.fit(X_train, Y_train)
+    df = pd.DataFrame(lm.coef_, X.columns, columns=['jee percentile'])
+    df = df.rename(index={'x_perc': 'xth percentage', 'xii_perc': 'xii th percentage', 'cet_perc': 'cet percentile', 'physics_xii': 'physics percentage xii',
+                          'chem_xii': 'chemistry percentage xii', 'maths_xii': 'maths percentage xii'})
+
+    # Iterate through each row in the DataFrame and check whether the coefficient is positive or negative
+    result = []
+    for i in range(len(df)):
+        coefficient = df['jee percentile'][i]
+        feature = df.index[i]
+        if coefficient > 0:
+            result.append(html.P(
+                [html.Strong("Percentage increase in JEE percent"), f" has a ",html.Strong("positive"),f" impact on ", html.Strong(feature),
+                 f" and it increases by: {coefficient:.2f}%"], style={'margin': '10px 0'}))
+        elif coefficient < 0:
+            result.append(html.P(
+                [html.Strong("Percentage increase in JEE percent"), f" has a ",html.Strong("negative"),f" impact on ", html.Strong(feature),
+                 f" and it decreases by: {coefficient:.2f}%"], style={'margin': '10px 0'}))
+        else:
+            result.append(html.P([html.Strong("Percentage increase in JEE percent"), f" has ",html.Strong("no"),f" impact on ", html.Strong(feature)], style={'margin': '10px 0'}))
+
+    return result
+@app.callback(
+    Output('graph', 'figure'),
+    [Input('my-slider', 'value')],
+    [Input('my-dropdown3', 'value')],
+    [Input('my-dropdown1', 'value')],
+    [Input('my-dropdown2', 'value')])
+
+def update_graph(selected_year, selected_stream, dropdown1_value, dropdown2_value):
+    # Filter data based on selected year and stream
+    # df['sid'] = df['sid'].astype(str)
+    if(selected_stream == 'none'):
+        filtered_df = df[df['year'] == selected_year]
+        if (dropdown1_value == 'x_perc' and dropdown2_value == 'xii_perc') or (
+                dropdown1_value == 'xii_perc' and dropdown2_value == 'x_perc'):
+            fig = go.Figure(data=go.Scatter(x=filtered_df['sid'], y=filtered_df['jee_perc'], mode='markers'))
+        elif (dropdown1_value == 'sid' and dropdown2_value == 'x_perc') or (
+                dropdown1_value == 'x_perc' and dropdown2_value == 'sid'):
+            fig = px.histogram(filtered_df, x='x_perc', nbins=10, labels={'x_perc': 'Xth Percentage'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8)
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+
+        elif (dropdown1_value == 'xii_perc' and dropdown2_value == 'jee_perc') or (
+                dropdown1_value == 'jee_perc' and dropdown2_value == 'xii_perc'):
+            fig = px.scatter(filtered_df, x='xii_perc', y='jee_perc', labels={'sid': 'SID', 'x_perc': 'X percentile'},
+                             color='stream')
+        elif (dropdown1_value == 'jee_perc' and dropdown2_value == 'sid') or (
+                dropdown1_value == 'sid' and dropdown2_value == 'jee_perc'):
+            fig = px.histogram(filtered_df, x='jee_perc', nbins=10, labels={'jee_perc': 'jee percentile'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        elif (dropdown1_value == 'xii_perc' and dropdown2_value == 'sid') or (
+                dropdown1_value == 'sid' and dropdown2_value == 'xii_perc'):
+            fig = px.histogram(filtered_df, x='xii_perc', nbins=10, labels={'xii_perc': 'XII TH PERCENTAGE'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        else:
+            fig = go.Figure()
+
+    else:
+        df3 = df[df['year'] == selected_year]
+        filtered_df = df3[df3['stream'] == selected_stream]
+        if (dropdown1_value == 'x_perc' and dropdown2_value == 'xii_perc') or (
+                dropdown1_value == 'xii_perc' and dropdown2_value == 'x_perc'):
+            fig = px.scatter(filtered_df, x='x_perc', y='jee_perc',labels={'x_perc': 'XTH PERCENTAGE', 'jee_perc': 'JEE PERCENTILE'},
+                             color='stream')
+            fig.update_layout(xaxis_title='XTH PERCENTAGE', yaxis_title='JEE percentile')
+        elif (dropdown1_value == 'sid' and dropdown2_value == 'x_perc') or (
+                dropdown1_value == 'x_perc' and dropdown2_value == 'sid'):
+            fig = px.histogram(filtered_df, x='x_perc', nbins=10, labels={'x_perc': 'Xth Percentage'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        elif (dropdown1_value == 'xii_perc' and dropdown2_value == 'jee_perc') or (
+                dropdown1_value == 'jee_perc' and dropdown2_value == 'xii_perc'):
+            fig = px.scatter(filtered_df, x='xii_perc', y='jee_perc', labels={'xii_perc': 'XII PERCENTAGE', 'jee_perc': 'JEE PERCENTILE'},
+                             color='stream')
+            fig.update_layout(xaxis_title='XII percentile', yaxis_title='JEE percentile')
+        elif (dropdown1_value == 'jee_perc' and dropdown2_value == 'sid') or (
+                dropdown1_value == 'sid' and dropdown2_value == 'jee_perc'):
+            fig = px.histogram(filtered_df, x='jee_perc', nbins=10, labels={'jee_perc': 'jee percentile'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        elif (dropdown1_value == 'xii_perc' and dropdown2_value == 'sid') or (
+                dropdown1_value == 'sid' and dropdown2_value == 'xii_perc'):
+            fig = px.histogram(filtered_df, x='xii_perc', nbins=10, labels={'xii_perc': 'XII TH PERCENTAGE'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        else:
+            fig = go.Figure()
+    # Define data and layout for different graph types
+
+    # Set layout for all graph types
+    fig.update_layout(title_text='{} Graph: {} vs {}'.format(selected_stream, dropdown1_value, dropdown2_value))
+
+    # Return the figure
+    return fig
+@app.callback(
+    Output('slider-output', 'children'),
+    [Input('select_years', 'value')]
+)
+def update_output(value):
+    # Update the heatmap data based on the slider value
+    nwdf100 = pd.read_csv('coords.csv')
+    df = nwdf100[nwdf100['year'] == value]
+    # Group the data by location and count the number of students for each location
+    data = df.groupby(['name', 'latitude', 'longitude'])['pincode'].count().reset_index()
+    # .reset_index()
+    data.columns = ['name', 'latitude', 'longitude', 'number_of_students']
+
+    # Create a map centered on a specific location
+    m = folium.Map(location=[18.932245, 72.826439], zoom_start=6)
+
+    marker_cluster = MarkerCluster().add_to(m)
+
+    area_group = FeatureGroupSubGroup(marker_cluster, 'Area')
+
+    # Filter the data for the area you're interested in
+    area_data = data[(data['latitude'] >= 0.0) & (data['longitude'] >= 0.0)]
+
+    # Loop through the data and create a marker for each point
+    for index, row in area_data.iterrows():
+        tooltip = "Number of students: {}".format(row['number_of_students'])
+        folium.Marker(location=[row['latitude'], row['longitude']], tooltip=tooltip).add_to(area_group)
+
+        # Add the FeatureGroupSubGroup to the map
+    area_group.add_to(m)
+
+    # Create a heatmap layer from the data
+    heat_data = [[row['latitude'], row['longitude']] for index, row in data.iterrows()]
+    heatmap = HeatMap(heat_data, name='Heatmap')
+
+    # Add the heatmap layer to the map
+    heatmap.add_to(m)
+    # text marker
+
+    # Add a layer control to the map
+    folium.LayerControl().add_to(m)
+    # western line
+    folium.PolyLine([(18.9354, 72.8262), (18.9442, 72.8239), (18.9536, 72.8174), (18.9591, 72.8132), (18.9696, 72.8196),
+                     (18.9827, 72.8193)
+                        , (19.0088, 72.8308)
+                        , (19.0111, 72.8403)
+                        , (19.0173, 72.8426)
+                        , (19.0271, 72.8464)
+                        , (19.0395, 72.8445)
+                        , (19.0544, 72.8402)
+                        , (19.0686, 72.8394)
+                        , (19.0814, 72.8416)
+                        , (19.0972, 72.8445)
+                        , (19.1197, 72.8464)
+                        , (19.1365, 72.8497)
+                        , (19.1542, 72.8534)
+                        , (19.1647, 72.8491)
+                        , (19.1867, 72.8486)
+                        , (19.204431413672715, 72.85164270837505)
+                        , (19.2292, 72.8572)
+                        , (19.2502, 72.8592)
+                        , (19.2813, 72.8563)
+                        , (19.3103, 72.8517)
+                        , (19.3465, 72.8545)
+                        , (19.3802, 72.8395)
+                        , (19.4186, 72.8179)
+                        , (19.455235541869268, 72.81211431208968), (19.519096449558383, 72.85036910889094),
+                     (19.577117893783946, 72.82171623907293), (19.6982688067134, 72.772179156276),
+                     (19.990148370578478, 72.74472504650069)], color="green", tooltip="Western Line", weight=3).add_to(
+        m)
+
+    folium.Marker(location=[19.455134379429648, 72.81202848139804],
+                  popup=folium.Popup('<i>Western Line</i>'),
+                  tooltip='Western Line',
+                  icon=folium.DivIcon(html="""Western Line""",
+                                      class_name="mapText"),
+                  ).add_to(m)
+
+    # inject html into the map html
+    m.get_root().html.add_child(folium.Element("""
+    <style>
+    .mapText {
+        white-space: nowrap;
+        color:green;
+        font-size:medium
+    }
+    </style>
+    """))
+    # csmt to kasara
+    folium.PolyLine(
+        [(18.943888, 72.835991), (18.994736760414902, 72.83299728510069), (19.020330448510123, 72.84365954445657),
+         (19.066573611668673, 72.87980951393833), (19.085515812592636, 72.90727222557408),
+         (19.18659041458438, 72.97536110837471), (19.19042930746032, 73.02342671394041),
+         (19.18871434223293, 73.04228938324867), (19.23571726600612, 73.13078415340435),
+         (19.29602463586944, 73.20378245441398), (19.439762665560814, 73.30787021023416),
+         (19.64852859016493, 73.47304712558349)], color="blue", tooltip="Central Line").add_to(m)
+    # kalyan to khopoli
+    folium.PolyLine([(19.23571726600612, 73.13078415340435), (19.16699440588468, 73.23863896084042),
+                     (18.91283348037467, 73.3207955409171), (18.789286786303602, 73.34539545440576)], color="blue",
+                    tooltip="Central Line").add_to(m)
+    folium.Marker(location=[19.23644145356165, 73.13028936975887],
+                  popup=folium.Popup('<i>Central Line</i>'),
+                  tooltip='Central Line',
+                  icon=folium.DivIcon(html="""Central Line""",
+                                      class_name="mapText"),
+                  ).add_to(m)
+    # harbour csmt to panvel
+    folium.PolyLine([(18.940295750335533, 72.83575288324467), (18.962173966262736, 72.83900556789912),
+                     (18.988393871718458, 72.84329590608344), (19.0162622023617, 72.85879774048796),
+                     (19.067444858086915, 72.8800346016453), (19.048343621374624, 72.93196402557346),
+                     (19.06339879342969, 72.99882074488211), (19.055727544411585, 73.017959166992),
+                     (19.02220959140532, 73.0189194026994), (19.01947799290236, 73.03948562689445),
+                     (19.02666691178611, 73.05961378456648), (19.008516434583814, 73.09459223336893),
+                     (18.992155097791116, 73.12093264019435)], color="yellow", tooltip="Harbour Line").add_to(m)
+    # harbor wadala to goregaon
+    folium.PolyLine([(19.0162622023617, 72.85879774048796), (19.041049756832933, 72.84699720172428),
+                     (19.056530893119035, 72.83989345615814), (19.068513041300847, 72.8399588909093),
+                     (19.164918718417084, 72.84922634833158)], color="yellow", tooltip="Harbour Line").add_to(m)
+    # metro line 9 gkp-vsv
+    folium.PolyLine([(19.08680000156715, 72.90811058324704), (19.09658860912144, 72.89500762742944),
+                     (19.10809761674883, 72.87981916604637), (19.121114420719188, 72.8482312390653),
+                     (19.130568159099553, 72.82134052371956)], color="cyan", tooltip="Metro Line 9").add_to(m)
+    # thane vashi line
+    folium.PolyLine([(19.18675254065755, 72.97540402372054), (19.176037824932855, 72.99472545441198),
+                     (19.103518084649536, 73.01215414724949), (19.07580016180758, 73.01782716790103),
+                     (19.06339879342969, 72.99882074488211)], color="purple", tooltip="TransHarbour Line").add_to(m)
+
+    # inject html into the map html
+    m.get_root().html.add_child(folium.Element("""
+    <style>
+    .mapText {
+        white-space: nowrap;
+        color:green;
+        font-size:medium
+    }
+    </style>
+    """))
+    folium.LayerControl(overlay={
+        'Markers': '<span style="color: green">Western Line</span> | <span style="color: blue">Central Line</span> | <span style="color: yellow">Harbour Line</span>',
+    }).add_to(m)
+
+    # Save the map to an HTML file
+    m.save('heatmap.html')
+
+    return ''
 if __name__ == '__main__':
     app.run_server(debug=True)
