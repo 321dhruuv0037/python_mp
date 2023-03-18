@@ -1,0 +1,17 @@
+.card-body {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .card img-top {
+    max-width: 30%;
+  }
+  
+  .card-paragraph {
+    max-width: 100%;
+  }
+  .card h3, p {
+    margin: 0;
+  }
