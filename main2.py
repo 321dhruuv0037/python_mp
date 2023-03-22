@@ -1,3 +1,4 @@
+import base64
 import math
 
 import dash_bootstrap_components.themes
@@ -19,6 +20,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import pandas as pd
 import folium
+import dash_table
+
 
 from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster, FeatureGroupSubGroup
@@ -83,7 +86,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # newdf=pd.DataFrame(lm.coef_,X.columns,columns=['jee percentile'])
 # abcd=newdf.to_html()
 
-df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdone.csv")
+df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdonenew.csv")
 year_list = list(df['year'].unique())
 print(year_list)
 
@@ -91,23 +94,43 @@ options = [
     {'label': 'COMPS', 'value': 'COMPS'},
     {'label': 'EXTC', 'value': 'EXTC'},
     {'label': 'MECH', 'value': 'MECH'},
-    {'label': 'IT', 'value': 'IT'}
+    {'label': 'IT', 'value': 'IT'},
+    {'label':'ALL BRANCHES','value':'none'}
 ]
 options1 = [
-    {'label': 'sid', 'value': 'sid'},
-    {'label': 'x_perc', 'value': 'x_perc'},
-    {'label': 'xii_perc', 'value': 'xii_perc'},
-    {'label': 'jee_perc', 'value': 'jee_perc'}
+    {'label': 'NO OF STUDENTS', 'value': 'sid'},
+    {'label': 'XTH PERCENTAGE', 'value': 'x_perc'},
+    {'label': 'XII TH PERCENTAGE', 'value': 'xii_perc'},
+    {'label': 'JEE PERCENTILE', 'value': 'jee_perc'}
 ]
 
 options2 = [
-    {'label': 'sid', 'value': 'sid'},
-    {'label': 'x_perc', 'value': 'x_perc'},
-    {'label': 'xii_perc', 'value': 'xii_perc'},
-    {'label': 'jee_perc', 'value': 'jee_perc'}
+    {'label': 'NO OF STUDENTS', 'value': 'sid'},
+    {'label': 'XTH PERCENTAGE', 'value': 'x_perc'},
+    {'label': 'XII TH PERCENTAGE', 'value': 'xii_perc'},
+    {'label': 'JEE PERCENTILE', 'value': 'jee_perc'}
 ]
+df = pd.read_csv('slider.csv')
+df = df.fillna(df.mean())
+max_df = df.groupby(['year', 'stream'])['jee_perc'].mean().reset_index()
+fig1 = px.line(max_df, x='year', y='jee_perc', color='stream', title='Average Percentile by Year and Stream',hover_data=['jee_perc', 'year'],labels={'jee_perc': 'JEE Percentile'})
+fig1.update_layout(xaxis=dict(tickmode='linear', dtick=1))
+highest = max_df.loc[max_df['jee_perc'].idxmax()]
+formatted_percentile = "{:.2f}".format(highest['jee_perc'])
+formatted_year = int(highest['year'])
+highest_branch = highest['stream']
+filtered_df = df[df['year'] == '2021']
+corr = filtered_df['sid'].corr(filtered_df['x_perc'])
+print("Correlation between SID and X percentile: {:.2f}".format(corr))
 
+# Add an annotation to the graph with the highest percentile value and year
+best_stream = highest['stream']
 
+print(f"The best performing stream is {best_stream}")
+# Group the data by stream and calculate the percentage change for each stream
+stream_df = df.groupby('stream')['jee_perc'].pct_change().reset_index()
+
+# Find the stream with the highest percentage growth
 # Read the CSV file into a Pandas DataFrame
 # data = pd.read_csv('heatmap.csv')
 #
@@ -206,6 +229,41 @@ options2 = [
 #
 # # Save the map to an HTML file
 # m.save('heatmap.html')
+import pandas as pd
+
+# read the csv file
+df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdonenew.csv")
+# fill missing values with the mean of the column
+df = df.fillna(df.mean())
+
+# group the data by year and stream and calculate the mean JEE percentile
+max_df = df.groupby(['year', 'stream'])['jee_perc'].mean().reset_index()
+
+# filter the data for the years 2021 and 2022
+filtered_df = max_df[max_df['year'].isin([2018, 2021])]
+
+# pivot the data to create a table with streams as columns and years as index
+pivot_df = filtered_df.pivot(index='year', columns='stream', values='jee_perc')
+
+# calculate the percentage change between the two years for each stream
+percent_change = (pivot_df.loc[2021] - pivot_df.loc[2018]) / pivot_df.loc[2018] * 100
+
+# display the percentage change for each branch
+print("Percentage change in JEE percentile by branch:\n", percent_change)
+
+# find the branch with the highest percentage change
+highest_change = percent_change.idxmax()
+print("The branch with the highest percentage change is:", highest_change, "with a change of", round(percent_change[highest_change], 2), "%.")
+df =pd.read_csv("slider.csv")
+print(df.head())
+
+years = ['2018', '2019', '2020', '2021']
+divisions = ['COMPS', 'EXTC', 'MECH']
+
+# Define the list of locations
+locations = ['Central Harbour', 'Western Line']
+
+# Define the table header
 
 
 
@@ -229,6 +287,28 @@ html.Div(
     ],
     className="container",
 ),
+html.Div([
+    dcc.Upload(
+        id='upload-data',
+        children=html.Div([
+            'Drag and Drop or ',
+            html.A('Select Files')
+        ]),
+        style={
+            'width': '100%',
+            'height': '60px',
+            'lineHeight': '60px',
+            'borderWidth': '1px',
+            'borderStyle': 'dashed',
+            'borderRadius': '5px',
+            'textAlign': 'center',
+            'margin': '10px'
+        },
+        # Allow multiple files to be uploaded
+        multiple=True
+    ),
+    html.Div(id='output-data-upload'),
+]),
 
 #     dbc.Container([
 #     dbc.Row([
@@ -295,9 +375,7 @@ dcc.Graph(id='bar_graph',
             #column 2
             dbc.Col([
                 html.Div(id='calculations'),
-            ],width=6 , style={'padding': '10px'})
-
-        ]),
+            ],width=6 , style={'padding': '10px'}),
     dbc.Row([
         dbc.Col([
             dcc.Graph(id='bar_graph3',
@@ -338,31 +416,124 @@ dcc.Graph(id='bar_graph',
             dcc.Dropdown(
                 id='my-dropdown',
                 options=options,
-                value=None,
+                value='IT',
+                className='dropdown',
+                style={'width':'400px'}
 
             ),
             html.Div(id='selected-branch')
-        ],className='my-dropdown'),
+        ],className='my-dropdown1'),
     ]),
     dbc.Row([
-        dcc.Graph(id='histogram'),
-    ]),
-    dbc.Row([
-        dcc.Dropdown(
+        dbc.Col([
+            dcc.Graph(figure=fig1),
+        ], width=9),
+
+        dbc.Col([
+           html.Div([
+               html.H1(children='Analysis',style={'justify-content':'center','text-align': 'center','display': 'flex'}),
+
+               # Display the best performing stream
+               html.Div(
+                   children=[
+                       f"The best performing stream is {best_stream}",
+                       html.I(className='fa-sharp fa-solid fa-user-tie',style={'padding':'10px'})
+                   ],
+                   style={'padding-top': '30px', 'font-size': '20px'}
+               ),
+               html.Div(
+                   children=[
+                       f"Highest average JEE percentile: {formatted_percentile} ",
+                       html.Br(),
+                       f"Year: ({formatted_year}) for {highest_branch} ",
+                       html.I(className='fas fa-fire')
+                   ]
+               ,style={'padding-top':'40px','font-size':'20px'}),
+               html.Div(
+                   children=[
+                       "The branch with the highest percentage change is:",
+                       html.Br(),
+                       highest_change,
+                       " with a change of ",
+                       round(percent_change[highest_change], 2),
+                       " ",
+                       html.I(className='fa-solid fa-percent')
+                   ]
+                   , style={'padding-top': '60px', 'font-size': '20px'})
+           ]),
+        ],className='card',width=3),
+    ],style={'padding':'20px'}),
+    html.Div([
+html.Div(
+    [
+        html.Img(src="assets/logo3.png", style={'display': 'block', 'margin': 'auto','height':'100px','width':'400px'})
+    ],style={'text-align': 'center','padding':'20px'}
+),
+dbc.Row([
+        dbc.Col([
+            html.P("Select the first Axis",style={'font-size':'20px'}),
+            dcc.Dropdown(
                 id='my-dropdown1',
+                className='dropdown',
                 options=options1,
-                value=None,
+                value='sid',
 
             ),
-        dcc.Dropdown(
-            id='my-dropdown2',
-            options=options2,
-            value=None,
+        ]),
+        dbc.Col([
+            html.P("Select the second Axis", style={'font-size': '20px'}),
+            dcc.Dropdown(
+                id='my-dropdown2',
+                options=options2,
+                className='dropdown',
+                value='x_perc',
 
-        ),
-        dcc.Graph(id='graph')
+            ),
+        ]),
+        dbc.Col([
+            html.P("Select the Branch", style={'font-size': '20px'}),
+            dcc.Dropdown(
+                id='my-dropdown3',
+                options=options,
+                value='IT',
+                className='dropdown',
+                style={'width': '400px'}
+
+            ),
+        ]),
+        dbc.Col([
+                html.P("Select the Year", style={'font-size': '20px'}),
+                    dcc.Slider(
+                        id='my-slider',
+                        min=2018,
+                        max=2021,
+                        step=None,
+                        value=2021,
+                        marks={i: str(i) for i in range(2018, 2022)}
+                    ),
+                ]),
+    dbc.Row([
+        dbc.Col([
+            dcc.Graph(id='graph')
+        ]),
+
+dbc.Col([    html.H2('COUNT', style={'margin-top': '0', 'margin-bottom': '30px'}),    html.Div(id='output', style={'font-size': '20px'})], width=2, style={
+    'background-image': 'url("https://wallpapercave.com/wp/wp6422920.jpg")',
+    'background-size': 'cover',
+    'background-repeat': 'no-repeat',
+    'box-shadow': 'inset 0px 0px 10px 1px rgba(255, 255, 255, 0.5), inset 0px 0px 20px 1px rgba(255, 255, 255, 0.2), 0px 0px 10px 1px rgba(0, 0, 0, 0.5)',
+    'color': 'white',
+    'display': 'flex',
+    'flex-direction': 'column',
+    'justify-content': 'center',
+    'align-items': 'center',
+    'padding': '10px'
+})
+
+    ],style={'padding':'10px'}),
 
     ]),
+    ],className='graph_generator',style={'border':'2px inset black','background-color':'#ECF0F1'}),
     dbc.Row([
         html.P(dcc.Markdown(
             """
@@ -370,7 +541,29 @@ dcc.Graph(id='bar_graph',
             """
         ), style={'line-height': '1', 'font-size': '25px',
                   'margin-left':'300px','margin-bottom': '20px'}),
-        html.Iframe(id='maps', srcDoc=open('heatmap.html', 'r').read(), width='100%', height='600',style={'border':'5px solid black'}),
+        dbc.Col([html.Iframe(id='maps', srcDoc=open('heatmap.html', 'r').read(), width='100%', height='600',style={'border':'5px solid black'}),]),
+dbc.Col([
+    dcc.Dropdown(
+        id='my-dropdown3',
+        options=options,
+        value='IT',
+        className='dropdown',
+        style={'width': '400px','padding-top':'10px'}),
+    html.Div(
+        dcc.Slider(
+            id='my-slider',
+            min=2018,
+            max=2021,
+            step=None,
+            value=2021,
+            marks={i: str(i) for i in range(2018, 2022)}
+        ),
+        style={'padding': '20px'}
+    ),
+                html.Div(id='calculations2'),
+            ],width=3,style={'padding': '10px'})
+
+        ]),
     ],style={'padding':'20px'}),
     dbc.Row([
         html.Div(id='slider-output')
@@ -457,6 +650,7 @@ html.Footer(className=' footer text-center text-lg-start text-muted', style={'te
             ])
         ])
 ])
+
 @app.callback(Output('bar_graph2', 'figure'),
               [Input('select_years', 'value')])
 def update_graph(value):
@@ -926,50 +1120,174 @@ def display_data(value):
 
     return result
 @app.callback(
-    Output('histogram', 'figure'),
-    [Input('select_years', 'value')],
-    [Input('my-dropdown', 'value')])
-def update_figure(selected_year, selected_stream):
-    filtered_df = df[df['year'] == selected_year]
-    filtered_df = filtered_df[filtered_df['stream'] == selected_stream]
-
-    fig = px.histogram(filtered_df, x='jee_perc', nbins=100,labels={'jee_perc':'jee percentile'}, color_discrete_sequence=['#EB89B5'],opacity=0.8,)
-    counts, bins = np.histogram(filtered_df['jee_perc'], bins=30)
-    max_count = counts.max()
-    fig.add_annotation(x=bins[counts.argmax()], y=max_count,
-                       text=f'Max Count: {max_count}', showarrow=True, arrowhead=1)
-
-    fig.update_layout(title=f'Histogram of JEE Percentile ({selected_stream}, {selected_year})')
-    return fig
-@app.callback(
     Output('graph', 'figure'),
-    [Input('select_years', 'value')],
-    [Input('my-dropdown', 'value')],
+    [Input('my-slider', 'value')],
+    [Input('my-dropdown3', 'value')],
     [Input('my-dropdown1', 'value')],
     [Input('my-dropdown2', 'value')])
 
-def update_graph(selected_year,selected_stream,dropdown1_value, dropdown2_value):
+def update_graph(selected_year, selected_stream, dropdown1_value, dropdown2_value):
     # Filter data based on selected year and stream
-    filtered_df = df[df['year'] == selected_year]
-    filtered_df = df[df['stream'] == selected_stream]
+    # df['sid'] = df['sid'].astype(str)
+    if(selected_stream == 'none'):
+        filtered_df = df[df['year'] == selected_year]
+        if (dropdown1_value == 'x_perc' and dropdown2_value == 'xii_perc') or (
+                dropdown1_value == 'xii_perc' and dropdown2_value == 'x_perc'):
+            fig = go.Figure(data=go.Scatter(x=filtered_df['sid'], y=filtered_df['jee_perc'], mode='markers'))
+        elif (dropdown1_value == 'sid' and dropdown2_value == 'x_perc') or (
+                dropdown1_value == 'x_perc' and dropdown2_value == 'sid'):
+            fig = px.histogram(filtered_df, x='x_perc', nbins=10, labels={'x_perc': 'Xth Percentage'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8)
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
 
-    # Define data and layout for different graph types
-    if dropdown1_value == 'x_perc' and dropdown2_value == 'xii_perc':
-        fig = px.histogram(filtered_df, x='jee_perc', nbins=100, labels={'jee_perc':'jee percentile'}, color_discrete_sequence=['#EB89B5'],opacity=0.8,)
-    elif dropdown1_value == 'sid' and dropdown2_value == 'x_perc':
-        fig = px.scatter(filtered_df, x='sid', y='x_perc', labels={'sid':'SID','x_perc':'X percentile'}, color='stream')
-    elif dropdown1_value == 'xii_perc' and dropdown2_value == 'jee_perc':
-        fig = px.pie(filtered_df, values='xii_perc', names='stream')
-    elif dropdown1_value == 'jee_perc' and dropdown2_value == 'sid':
-        fig = go.Figure(data=go.Scatter(x=filtered_df['sid'], y=filtered_df['jee_perc'], mode='markers'))
+        elif (dropdown1_value == 'xii_perc' and dropdown2_value == 'jee_perc') or (
+                dropdown1_value == 'jee_perc' and dropdown2_value == 'xii_perc'):
+            fig = px.scatter(filtered_df, x='xii_perc', y='jee_perc', labels={'sid': 'SID', 'x_perc': 'X percentile'},
+                             color='stream')
+        elif (dropdown1_value == 'jee_perc' and dropdown2_value == 'sid') or (
+                dropdown1_value == 'sid' and dropdown2_value == 'jee_perc'):
+            fig = px.histogram(filtered_df, x='jee_perc', nbins=10, labels={'jee_perc': 'jee percentile'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        elif (dropdown1_value == 'xii_perc' and dropdown2_value == 'sid') or (
+                dropdown1_value == 'sid' and dropdown2_value == 'xii_perc'):
+            fig = px.histogram(filtered_df, x='xii_perc', nbins=10, labels={'xii_perc': 'XII TH PERCENTAGE'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        else:
+            fig = go.Figure()
+
     else:
-        fig = go.Figure()
+        df3 = df[df['year'] == selected_year]
+        filtered_df = df3[df3['stream'] == selected_stream]
+        if (dropdown1_value == 'x_perc' and dropdown2_value == 'xii_perc') or (
+                dropdown1_value == 'xii_perc' and dropdown2_value == 'x_perc'):
+            fig = px.scatter(filtered_df, x='x_perc', y='jee_perc',labels={'x_perc': 'XTH PERCENTAGE', 'jee_perc': 'JEE PERCENTILE'},
+                             color='stream')
+            fig.update_layout(xaxis_title='XTH PERCENTAGE', yaxis_title='JEE percentile')
+        elif (dropdown1_value == 'sid' and dropdown2_value == 'x_perc') or (
+                dropdown1_value == 'x_perc' and dropdown2_value == 'sid'):
+            fig = px.histogram(filtered_df, x='x_perc', nbins=10, labels={'x_perc': 'Xth Percentage'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        elif (dropdown1_value == 'xii_perc' and dropdown2_value == 'jee_perc') or (
+                dropdown1_value == 'jee_perc' and dropdown2_value == 'xii_perc'):
+            fig = px.scatter(filtered_df, x='xii_perc', y='jee_perc', labels={'xii_perc': 'XII PERCENTAGE', 'jee_perc': 'JEE PERCENTILE'},
+                             color='stream')
+            fig.update_layout(xaxis_title='XII percentile', yaxis_title='JEE percentile')
+        elif (dropdown1_value == 'jee_perc' and dropdown2_value == 'sid') or (
+                dropdown1_value == 'sid' and dropdown2_value == 'jee_perc'):
+            fig = px.histogram(filtered_df, x='jee_perc', nbins=10, labels={'jee_perc': 'jee percentile'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        elif (dropdown1_value == 'xii_perc' and dropdown2_value == 'sid') or (
+                dropdown1_value == 'sid' and dropdown2_value == 'xii_perc'):
+            fig = px.histogram(filtered_df, x='xii_perc', nbins=10, labels={'xii_perc': 'XII TH PERCENTAGE'},
+                               color_discrete_sequence=['#EB89B5'], opacity=0.8, )
+            fig.update_layout(
+                title_text='Sampled Results',  # title of plot
+                xaxis_title_text='Value',  # xaxis label
+                yaxis_title_text='Count',  # yaxis label
+                bargap=0.1,  # gap between bars of adjacent location coordinates
+                bargroupgap=0.1  # gap between bars of the same location coordinates
+            )
+        else:
+            fig = go.Figure()
+    # Define data and layout for different graph types
 
     # Set layout for all graph types
     fig.update_layout(title_text='{} Graph: {} vs {}'.format(selected_stream, dropdown1_value, dropdown2_value))
 
     # Return the figure
     return fig
+@app.callback(
+    Output('output', 'children'),
+    [Input('my-slider', 'value')],
+    [Input('my-dropdown3', 'value')])
+def update_output(selected_year, selected_stream):
+    if selected_stream == 'none':
+        df_filtered = df[df['year'] == selected_year]
+        count = len(df_filtered)
+        return f'Total students in {selected_year}: {count}'
+    else:
+        df_filtered = df[(df['year'] == selected_year) & (df['stream'] == selected_stream)]
+        count = len(df_filtered)
+        return f'Total students in {selected_stream} branch in {selected_year}: {count}'
+@app.callback(
+    Output('calculations2', 'children'),
+    [Input('my-slider', 'value')],
+    [Input('my-dropdown3', 'value')])
+def update_output(selected_year, selected_stream):
+    if selected_stream == 'none':
+        df_filtered = df[df['year'] == selected_year]
+        df_filtered1 = df_filtered.groupby('line').count().reset_index()
+        df_filtered2 = df_filtered1.loc[df_filtered1['jee_perc'].idxmax(), 'jee_perc']
+        central_count = df_filtered[df_filtered['line'] == 'central']['line'].count()
+        western_count = df_filtered[df_filtered['line'] == 'western']['line'].count()
+        harbour_count = df_filtered[df_filtered['line'] == 'harbour']['line'].count()
+
+        return [html.Table(
+            [html.Thead(
+                [html.Tr([html.Th('CENTRAL'), html.Th('WESTERN'), html.Th('HARBOUR')], className='header_hover')
+                 ]),
+             html.Tbody([
+                 html.Tr([
+                     html.Td('{:d}'.format(int(central_count))),
+                     html.Td('{:d}'.format(int(western_count))),
+                     html.Td('{:d}'.format(int(harbour_count)))
+                 ], className='hover_only_row')
+             ])
+             ], className='table_style')
+        ]
+    else:
+        df_filtered = df[(df['year'] == selected_year) & (df['stream'] == selected_stream)]
+        central_count = df_filtered[df_filtered['line'] == 'central']['line'].count()
+        western_count = df_filtered[df_filtered['line'] == 'western']['line'].count()
+        harbour_count = df_filtered[df_filtered['line'] == 'harbour']['line'].count()
+        return [html.Table(
+            [html.Thead(
+                [html.Tr([html.Th('CENTRAL'), html.Th('WESTERN'), html.Th('HARBOUR')], className='header_hover')
+                 ]),
+                html.Tbody([
+                    html.Tr([
+                        html.Td('{:d}'.format(int(central_count))),
+                        html.Td('{:d}'.format(int(western_count))),
+                        html.Td('{:d}'.format(int(harbour_count)))
+                    ], className='hover_only_row')
+                ])
+            ], className='table_style')
+        ]
+
 @app.callback(
     Output('slider-output', 'children'),
     [Input('select_years', 'value')]
