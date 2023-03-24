@@ -1,4 +1,4 @@
-Campus DataHub
+DataMind
 
 ![image](https://user-images.githubusercontent.com/109984055/221249815-e0a5c91b-c7e7-4be1-acba-d984233fd784.png)
 
