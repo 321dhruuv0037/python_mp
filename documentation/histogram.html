@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+  <meta name="generator" content="Hugo 0.108.0">
+
+  <title>Histogram</title>
+
+  <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/album/">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css" />
+
+
+
+
+
+  <link href="/docs/5.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+
+  <!-- Favicons -->
+  <link rel="shortcut icon" href="Images/favicon.ico" type="image/x-icon">
+
+
+  <meta name="theme-color" content="#712cf9">
+  <style>
+    /* Custom styles */
+    body {
+      background-color: #f2f2f2;
+    }
+
+    .container {
+      margin-top: 50px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .navbar {
+      background-color: #333;
+    }
+
+    .navbar-brand,
+    .navbar-nav .nav-link {
+      color: #fff !important;
+    }
+
+    .navbar-nav li.active a {
+      background-color: #007bff;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <img src="Images/DM Logo.png" alt="Logo" width="40" height="30" class="d-inline-block align-text-top">
+        DataMind
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="docu.html">Documentation</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Pricing</a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <h1>Histogram</h1>
+    <p>A Histogram is a variation of a bar chart in which data values are grouped together and put into different classes. This grouping enables you to see how frequently data in each class occur in the dataset. 
+    </p>
+
+    <h2>Number of Students by Xth/XIIth and Jee/Cet Percentile</h2>
+    <p>Here is a Histogram that shows the number of students having specific percentages in Xth/XIIth and Jee/Cet Percentiles :</p>
+    <img src="Images/Datamind/Histo example.png" alt="Histogram Example" class="img-fluid">
+
+    <p>In this example, the x-axis represents the percent ranges, and the y-axis represents the count of students. We have also added the count of the histogram
+      beside it as seen in the image above.You can change the branch and year accordingly.
+    </p>
+
+    <h3>Why have we used Histogram?</h3>
+    <p>1.Shows the distribution of data: A histogram is a type of graph that shows the distribution of a dataset. It displays the range of values on the x-axis and the frequency or number of occurrences on the y-axis. This allows viewers to see how the data is distributed, including any patterns, clusters, or gaps.</p>
+
+    <p>2.Clear representation of data spread: Histograms are particularly useful for representing large datasets, as they provide a clear visual representation of how the data is spread out across the range of values. Viewers can easily see the frequency of marks falling into different intervals, which can reveal information about the distribution of marks.</p>
+
+    <p>3.Easy to read and interpret: Histograms are easy to read and interpret, even for viewers who may not be familiar with the data. The bars in the histogram are typically drawn in a uniform way, making it easy to compare the different frequencies of marks.</p>
+
+    <p>4.Useful for identifying outliers: Histograms can help identify any outliers or extreme values in the data. These can be represented as bars that are significantly taller or shorter than the others, indicating a deviation from the overall trend.</p>
+  </div>
+
+  <!-- Link to Bootstrap JS -->
+  <script src="/docs/5.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous">
+  </script>
+</body>
+
+</html>
