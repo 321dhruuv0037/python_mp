@@ -49,11 +49,6 @@
     -webkit-overflow-scrolling: touch;
 }
 
-.my-div{
-    background-image: url("Images/0305_data-800x480.jpg");
-    background-size: cover
-    
-}
 
 #hs:hover {
     cursor: pointer;
