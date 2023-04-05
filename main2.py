@@ -86,7 +86,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # newdf=pd.DataFrame(lm.coef_,X.columns,columns=['jee percentile'])
 # abcd=newdf.to_html()
 
-df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdonenew.csv")
+df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
 year_list = list(df['year'].unique())
 print(year_list)
 
@@ -232,7 +232,8 @@ stream_df = df.groupby('stream')['jee_perc'].pct_change().reset_index()
 import pandas as pd
 
 # read the csv file
-df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdonenew.csv")
+df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
+print(df.describe())
 # fill missing values with the mean of the column
 df = df.fillna(df.mean())
 
@@ -264,6 +265,13 @@ divisions = ['COMPS', 'EXTC', 'MECH']
 locations = ['Central Harbour', 'Western Line']
 
 # Define the table header
+df_summary = df.describe().reset_index()
+df_summary = df_summary.round(0)
+
+
+
+print(df_summary)
+
 
 
 
@@ -276,7 +284,7 @@ locations = ['Central Harbour', 'Western Line']
 
 
 app.layout = html.Div([
-html.Div(
+    html.Div(
     [
         navigation.navbar,
         html.H1("Student Data Analysis Dashboard" ,style={'margin-left':'300px','padding-top':'10px'}),
@@ -359,11 +367,11 @@ html.Div([
                  #           className='slider_component'),
                 dcc.Slider(
                     id='select_years',
-                    min=2018,
+                    min=2016,
                     max=2021,
                     step=None,
                     value=2021,
-                    marks={i: str(i) for i in range(2018, 2022)}
+                    marks={i: str(i) for i in range(2016, 2022)}
                 ),
             ], className='container_slider'),
 dcc.Graph(id='bar_graph',
@@ -461,8 +469,12 @@ dcc.Graph(id='bar_graph',
                    ]
                    , style={'padding-top': '60px', 'font-size': '20px'})
            ]),
-        ],className='card',width=3),
-    ],style={'padding':'20px'}),
+        ],style={ 'background-image': 'url("https://wallpapercave.com/wp/wp6422920.jpg")',
+    'background-size': 'cover',
+    'background-repeat': 'no-repeat',
+    'box-shadow': 'inset 0px 0px 10px 1px rgba(255, 255, 255, 0.5), inset 0px 0px 20px 1px rgba(255, 255, 255, 0.2), 0px 0px 10px 1px rgba(0, 0, 0, 0.5)',
+    'color': 'white',},className='card',width=3),
+    ],style={'padding':'20px'} ),
     html.Div([
 html.Div(
     [
@@ -542,26 +554,71 @@ dbc.Col([    html.H2('COUNT', style={'margin-top': '0', 'margin-bottom': '30px'}
         ), style={'line-height': '1', 'font-size': '25px',
                   'margin-left':'300px','margin-bottom': '20px'}),
         dbc.Col([html.Iframe(id='maps', srcDoc=open('heatmap.html', 'r').read(), width='100%', height='600',style={'border':'5px solid black'}),]),
-dbc.Col([
-    dcc.Dropdown(
-        id='my-dropdown3',
-        options=options,
-        value='IT',
-        className='dropdown',
-        style={'width': '400px','padding-top':'10px'}),
-    html.Div(
-        dcc.Slider(
-            id='my-slider',
-            min=2018,
-            max=2021,
-            step=None,
-            value=2021,
-            marks={i: str(i) for i in range(2018, 2022)}
+dbc.Col(
+    [
+        html.P(dcc.Markdown(
+            """
+            **Insights**
+            """
+        ), className="text2"),
+dbc.Row([
+    dbc.Col([
+html.P(dcc.Markdown(
+            """
+            **Select Branch:**
+            """
+        ), className="text1"),
+    ]),
+    dbc.Col([
+dcc.Dropdown(
+            id='my-dropdown4',
+            options=options,
+            value='IT',
+            className='dropdown',
+            style={'width': '200px', 'padding-top': '10px','msrgin-left':'40px'}
         ),
-        style={'padding': '20px'}
+    ]),
+]),
+dbc.Row([
+    dbc.Col([
+html.P(dcc.Markdown(
+    """
+    **Select Year:**
+    """
+), className="text1", style={"text-align": "left"})
+    ]),
+html.Div(
+    dcc.Slider(
+        id='my-slider2',
+        min=2016,
+        max=2021,
+        step=None,
+        value=2021,
+        marks={i: str(i) for i in range(2016, 2022)}
     ),
-                html.Div(id='calculations2'),
-            ],width=3,style={'padding': '10px'})
+    style={'width': '120%','color':'white'},
+    className='slider-container'
+)
+]),
+html.P(dcc.Markdown(
+    """
+   Below is the **Count** of the students for different regions of mumbai :
+    """
+), style={"text-align": "left",'padding-top':'40px'}),
+
+
+        html.Div(id='calculations2',style={'padding-top':'20px'})
+    ],
+    width=3,
+    style={
+        'padding': '10px',
+         'background-image': 'url("https://wallpapercave.com/wp/wp6422920.jpg")',
+            'background-size': 'cover',
+            'background-repeat': 'no-repeat',
+            'box-shadow': 'inset 0px 0px 10px 1px rgba(255, 255, 255, 0.5), inset 0px 0px 20px 1px rgba(255, 255, 255, 0.2), 0px 0px 10px 1px rgba(0, 0, 0, 0.5)',
+            'color': 'white',
+    }
+)
 
         ]),
     ],style={'padding':'20px'}),
@@ -601,6 +658,32 @@ dbc.Col([
                 ),
                 md=6,
             ),
+            dbc.Col(
+dash_table.DataTable(
+    id='table',
+    columns=[{"name": i, "id": i} for i in df_summary.columns],
+    data=df_summary.round(0).to_dict('records'),
+    style_table={'overflowX': 'scroll'},
+    style_cell={
+        'minWidth': '0px', 'maxWidth': '180px',
+        'overflow': 'hidden',
+        'textOverflow': 'ellipsis',
+        'textAlign': 'center',
+        'fontFamily': 'Arial, sans-serif',
+        'fontSize': '12px',
+        'backgroundColor': '#f2f2f2'
+    },
+    style_header={
+        'backgroundColor': 'black',
+        'color': 'white',
+        'fontWeight': 'bold',
+        'textAlign': 'center',
+        'fontFamily': 'Arial, sans-serif',
+        'fontSize': '14px'
+    },
+)
+    ,
+            ),
         ]),
 
 
@@ -612,7 +695,7 @@ html.Footer(className=' footer text-center text-lg-start text-muted', style={'te
                     html.Div(className='col-md-3 col-lg-4 col-xl-3 mx-auto mb-4', children=[
                         html.Div(className='cell-sm-6 cell-lg-3 cell-xl-4', children=[
                             html.A(href='/index.html', children=[
-                                html.Img(className='img-responsive', src='/assets/capstone_logo.jpeg', alt='DBIT', width='250', height='50')
+                                html.Img(className='img-responsive', src='/assets/Datamind2.png', alt='DBIT', width='350', height='150')
                             ]),
                             html.P(className='offset-top-20 offset-md-top-35 inset-xl-right-30', style={'color': 'white', 'padding': '1rem', 'text-align': 'left'}, children=[
                                 html.B(children='We are a specialized data company that offers a range of services related to data science, data analysis, data visualization, and machine learning.')
@@ -663,6 +746,8 @@ def update_graph(value):
                 x=df6['stream'],
                 y=df6['parent_income'],
                 text=df6['parent_income'],
+                width=[0.4, 0.4, 0.4, 0.4],
+
                 texttemplate='%{text:,.2s}',
                 textposition='outside',
                 marker=dict(color='#38D56F'),
@@ -721,6 +806,7 @@ def update_graph(value):
             go.Bar(
                 x=df4['stream'],
                 y=df4['jee_perc'],
+                width=[0.4,0.4,0.4,0.4],
                 text=df4['jee_perc'],
                 texttemplate='%{text:,.2s}',
                 textposition='outside',
@@ -859,7 +945,7 @@ def update_graph(value):
             go.Bar(
                 x=df11['quota'],
                 y=df11['jee_perc'],
-                width=[0.5,0.5],
+                width=[0.3,0.3],
                 text=df11['jee_perc'],
                 texttemplate='%{text:,.2s}',
                 textposition='outside',
@@ -1029,7 +1115,7 @@ def display_data(value):
 def display_data(value):
     #This code first filters the dataframe df to only include rows where the year is 2019. Then, it groups the resulting dataframe by sector and counts the number of occurrences of sid in each group. The resulting dataframe df_genre has columns sector and sid.
     #, the code uses idxmax() to find the row index of the row with the maximum value of sid, and then selects the sector value from that row using .loc[]. The resulting df_genre2 should be the sector with the highest count of sid for the year 2019.
-    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdone.csv")
+    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
     df_year = df[df['year'] == value]
     X = df_year[['x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii']]
     Y = df_year['jee_perc']
@@ -1091,7 +1177,7 @@ def update_heatmap(selected_columns):
     [Input('select_years', 'value')]
 )
 def display_data(value):
-    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/sliderdone.csv")
+    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
     df_year = df[df['year'] == value]
     X = df_year[['x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii']]
     Y = df_year['jee_perc']
@@ -1245,8 +1331,8 @@ def update_output(selected_year, selected_stream):
         return f'Total students in {selected_stream} branch in {selected_year}: {count}'
 @app.callback(
     Output('calculations2', 'children'),
-    [Input('my-slider', 'value')],
-    [Input('my-dropdown3', 'value')])
+    [Input('my-slider2', 'value')],
+    [Input('my-dropdown4', 'value')])
 def update_output(selected_year, selected_stream):
     if selected_stream == 'none':
         df_filtered = df[df['year'] == selected_year]
@@ -1302,7 +1388,7 @@ def update_output(value):
     data.columns = ['name', 'latitude', 'longitude', 'number_of_students']
 
     # Create a map centered on a specific location
-    m = folium.Map(location=[18.932245, 72.826439], zoom_start=6)
+    m = folium.Map(location=[18.932245, 72.826439], zoom_start=10)
 
     marker_cluster = MarkerCluster().add_to(m)
 
