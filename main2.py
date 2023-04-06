@@ -38,7 +38,7 @@ font_awesome2 = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/r
 font_awesome3 = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/solid.min.css'
 external_stylesheets = [
     dbc.themes.BOOTSTRAP,
-    '/assets/style.css',
+    '/assets/style2.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/regular.min.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/solid.min.css'
@@ -265,8 +265,9 @@ divisions = ['COMPS', 'EXTC', 'MECH']
 locations = ['Central Harbour', 'Western Line']
 
 # Define the table header
-df_summary = df.describe().reset_index()
-df_summary = df_summary.round(0)
+cols_to_include = ['sid','x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii', 'jee_perc', 'parent_income']
+df_summary = df[cols_to_include].describe().round(0).reset_index()
+df_summary = df_summary.rename(columns={'sid': 'Student ID', 'x_perc': 'Xth Percentage', 'xii_perc': 'XII th Percentage', 'cet_perc': 'CET Percentile', 'physics_xii': 'Physics XIIth', 'chem_xii': 'Chemistry XIIth', 'maths_xii': 'Maths XIIth', 'jee_perc': 'JEE Percentile', 'parent_income': 'Parent Income'})
 
 
 
@@ -376,7 +377,9 @@ html.Div([
             ], className='container_slider'),
 dcc.Graph(id='bar_graph',
                       config={'displayModeBar': 'hover'},
-                      className='bar_graph_border',style={'border': '1px ridge black'})
+                      className='bar_graph_border',style={'border': '1px ridge black'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/barchart.html', target='_blank'),    ' about Bar Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
+
 
 ]),
             ],width=6,style={'padding': '10px'}),
@@ -388,12 +391,14 @@ dcc.Graph(id='bar_graph',
         dbc.Col([
             dcc.Graph(id='bar_graph3',
                       config={'displayModeBar': 'hover'},
-                      className='bar_graph_border',style={'border': '1px ridge black', 'background-color': '#f8f9fa'})
+                      className='bar_graph_border',style={'border': '1px ridge black', 'background-color': '#f8f9fa'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/barchart.html', target='_blank'),    ' about Bar Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
         ], width=6 , style={'padding': '10px'}),
         dbc.Col([
             dcc.Graph(id='bar_graph2',
                       config={'displayModeBar': 'hover'},
-                      className='bar_graph_border',style={'border': '1px ridge black'})
+                      className='bar_graph_border',style={'border': '1px ridge black'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/barchart.html', target='_blank'),    ' about Bar Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
         ], width=6 , style={'padding': '10px'})
     ]),
     dbc.Row([
@@ -401,7 +406,8 @@ dcc.Graph(id='bar_graph',
             html.Div([
                 dcc.Graph(id='pie_chart',
                           config={'displayModeBar': 'hover'},
-                          className='bar_graph_border',style={'border': '1px ridge black'})
+                          className='bar_graph_border',style={'border': '1px ridge black'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/piechart.html', target='_blank'),    ' about Pie Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
 
             ]),
         ], width=6, style={'padding': '10px'}),
@@ -409,7 +415,8 @@ dcc.Graph(id='bar_graph',
             html.Div([
                 dcc.Graph(id='pie_chart2',
                           config={'displayModeBar': 'hover'},
-                          className='bar_graph_border ',style={'border': '1px ridge black'})
+                          className='bar_graph_border ',style={'border': '1px ridge black'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/piechart.html', target='_blank'),    ' about Pie Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
 
             ]),
 
@@ -417,19 +424,15 @@ dcc.Graph(id='bar_graph',
     ]),
     dbc.Row([
         dbc.Row([
-            html.P(dcc.Markdown(
-                """please select the **branch**"""
-            ), style={'line-height': '1', 'font-size': '25px','margin-bottom': '20px'}),
+dbc.Row([
+    html.Div([
+        html.P(dcc.Markdown(
+            """Graph Representing Performance of All **branches** Over The Years"""
+        ), style={'line-height': '1', 'font-size': '25px', 'margin-bottom': '20px', 'text-align': 'center'}),
+    ], style={'background-color': 'white', 'border-radius': '10px', 'border': '2px solid black', 'padding': '20px'}),
+]),
 
-            dcc.Dropdown(
-                id='my-dropdown',
-                options=options,
-                value='IT',
-                className='dropdown',
-                style={'width':'400px'}
-
-            ),
-            html.Div(id='selected-branch')
+            html.Div(id='selected-branch'),
         ],className='my-dropdown1'),
     ]),
     dbc.Row([
@@ -467,7 +470,7 @@ dcc.Graph(id='bar_graph',
                        " ",
                        html.I(className='fa-solid fa-percent')
                    ]
-                   , style={'padding-top': '60px', 'font-size': '20px'})
+                   , style={'padding-top': '60px', 'font-size': '20px'}),
            ]),
         ],style={ 'background-image': 'url("https://wallpapercave.com/wp/wp6422920.jpg")',
     'background-size': 'cover',
@@ -475,6 +478,7 @@ dcc.Graph(id='bar_graph',
     'box-shadow': 'inset 0px 0px 10px 1px rgba(255, 255, 255, 0.5), inset 0px 0px 20px 1px rgba(255, 255, 255, 0.2), 0px 0px 10px 1px rgba(0, 0, 0, 0.5)',
     'color': 'white',},className='card',width=3),
     ],style={'padding':'20px'} ),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/linechart.html', target='_blank'),    ' about Line Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'}),
     html.Div([
 html.Div(
     [
@@ -543,6 +547,7 @@ dbc.Col([    html.H2('COUNT', style={'margin-top': '0', 'margin-bottom': '30px'}
 })
 
     ],style={'padding':'10px'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/histogram.html', target='_blank'),    ' about Histogram.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'}),
 
     ]),
     ],className='graph_generator',style={'border':'2px inset black','background-color':'#ECF0F1'}),
@@ -553,7 +558,7 @@ dbc.Col([    html.H2('COUNT', style={'margin-top': '0', 'margin-bottom': '30px'}
             """
         ), style={'line-height': '1', 'font-size': '25px',
                   'margin-left':'300px','margin-bottom': '20px'}),
-        dbc.Col([html.Iframe(id='maps', srcDoc=open('heatmap.html', 'r').read(), width='100%', height='600',style={'border':'5px solid black'}),]),
+        dbc.Col([html.Iframe(id='maps', srcDoc=open('heatmap.html', 'r').read(), width='100%', height='600',style={'border':'5px solid black','padding':'5px'}),]),
 dbc.Col(
     [
         html.P(dcc.Markdown(
@@ -621,74 +626,97 @@ html.P(dcc.Markdown(
 )
 
         ]),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/heatmap.html', target='_blank'),    ' about Density Heatmap.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'}),
     ],style={'padding':'20px'}),
     dbc.Row([
         html.Div(id='slider-output')
     ]),
-   html.Div([
-       html.H1("Data Analysis and Predictions", style={'margin-left': '300px', 'padding': '10px','font-size':'60px'}),
-       dbc.Row([
-           dbc.Col([
-               html.Div(id='MachineLearningAnalysis'),
-               html.P(dcc.Markdown(
-                   """
-                   **Below ** is  the analysis of Students **data** for the above ***table***
-                   """
-               ),className="text1"),
-               html.Div(id='MachineLearningAnalysis2',className="MachineLearningAnalysis2"),
-           ],className='MachineLearningAnalysis'),
-           dbc.Col([
-               dbc.Card(dcc.Graph(id='heatmap'))
-           ],className='heatmap'),
-
-       ]),
+    html.Div([
+        html.H1("Data Analysis and Predictions",
+                style={'margin-left': '300px', 'padding': '10px', 'font-size': '60px'}),
         dbc.Row([
-            dbc.Col(
+            dbc.Col([
+html.P(dcc.Markdown(
+                    """
+                    Below is  **Correlation** of Different Features of The **Dataset** amongst Itself
+                    """
+                ),style={'font-size':'20px'}),
+                html.Div(id='MachineLearningAnalysis'),
+                html.P(dcc.Markdown(
+                    """
+                    **Below ** is  the analysis of Students **data** for the above ***table***
+                    """
+                ), style={'justify-content': 'center','align-items': 'center','display': 'flex',}),
                 html.Div(
-                    [
-                        html.H2("Change the background", className="display-3"),
-                        html.Hr(className="my-2"),
-                        html.P(
-                            "Swap the background-color utility and add a `.text-*` color "
-                            "utility to mix up the look."
-                        ),
-                        dbc.Button("Example Button", color="light", outline=True),
-                    ],
-                    className="h-100 p-5 text-white bg-dark rounded-3",
+                    id='MachineLearningAnalysis2',
+                    className='MachineLearningAnalysis2',
+                    style={
+                        'background-color': 'white',
+                        'border': '2px solid black',
+                        'box-shadow': '5px 5px 5px grey',
+                        'padding': '10px',
+                        'margin': '10px',
+                        'border-radius': '10px',
+                    }
                 ),
-                md=6,
-            ),
+            ], className='MachineLearningAnalysis'),
+            dbc.Col([
+html.P(dcc.Markdown(
+                    """
+                    Below is  The ** Heamtmap of Correlation** of Different Features of The **Dataset** 
+                    """
+                ),style={'font-size':'20px'}),
+                dbc.Card(dcc.Graph(id='heatmap'))
+            ], className='heatmap'),
+
+        ]),
+        dbc.Row([
+html.P(
+    dcc.Markdown(
+        """
+        **Below** is the **Statistical Analysis** of the **Entire Dataset**
+        """
+    ),
+    style={
+        'font-size': '25px',
+        'justify-content': 'center',
+        'align-items': 'center',
+        'display': 'flex',
+        'background-color': 'white',
+        'border-radius': '50px',
+        'padding': '10px',
+        'border': '2px solid black',
+    }
+),
             dbc.Col(
-dash_table.DataTable(
-    id='table',
-    columns=[{"name": i, "id": i} for i in df_summary.columns],
-    data=df_summary.round(0).to_dict('records'),
-    style_table={'overflowX': 'scroll'},
-    style_cell={
-        'minWidth': '0px', 'maxWidth': '180px',
-        'overflow': 'hidden',
-        'textOverflow': 'ellipsis',
-        'textAlign': 'center',
-        'fontFamily': 'Arial, sans-serif',
-        'fontSize': '12px',
-        'backgroundColor': '#f2f2f2'
-    },
-    style_header={
-        'backgroundColor': 'black',
-        'color': 'white',
-        'fontWeight': 'bold',
-        'textAlign': 'center',
-        'fontFamily': 'Arial, sans-serif',
-        'fontSize': '14px'
-    },
-)
-    ,
+                dash_table.DataTable(
+                    id='table',
+                    columns=[{"name": i, "id": i} for i in df_summary.columns],
+                    data=df_summary.round(0).to_dict('records'),
+                    style_table={'overflowX': 'scroll'},
+                    style_cell={
+                        'minWidth': '0px', 'maxWidth': '180px',
+                        'overflow': 'hidden',
+                        'textOverflow': 'ellipsis',
+                        'textAlign': 'center',
+                        'fontFamily': 'Arial, sans-serif',
+                        'fontSize': '12px',
+                        'backgroundColor': '#f2f2f2'
+                    },
+                    style_header={
+                        'backgroundColor': 'black',
+                        'color': 'white',
+                        'fontWeight': 'bold',
+                        'textAlign': 'center',
+                        'fontFamily': 'Arial, sans-serif',
+                        'fontSize': '14px'
+                    },
+                ),
             ),
         ]),
+    ], className='Data_analysis', style={'border': '5px solid black','padding':'10px'}),
 
-
-   ],className='Data_analysis'),
-html.Footer(className=' footer text-center text-lg-start text-muted', style={'text-align': 'left', 'background-color': '#333333'}, children=[
+    html.Footer(className=' footer text-center text-lg-start text-muted', style={'text-align': 'left', 'background-color': '#333333'}, children=[
         html.Section(className='', style={'padding': '5px'}, children=[
             html.Div(className='container text-center text-md-start mt-5', children=[
                 html.Div(className='row mt-3', children=[
@@ -709,6 +737,10 @@ html.Footer(className=' footer text-center text-lg-start text-muted', style={'te
                         html.P(children=[
                             '>',
                             html.A(href='assets/aboutus .html', className='text-reset', style={'text-decoration': 'none', 'text-align': 'left'}, children=['ABOUT US'])
+                        ]),
+                        html.P(children=[
+                            '>',
+                            html.A(href='assets/docu.html', className='text-reset', style={'text-decoration': 'none', 'text-align': 'left'}, children=['ABOUT US'])
                         ]),
                         html.P(children=[
                             '>',
@@ -1148,6 +1180,7 @@ def update_heatmap(selected_columns):
 
 
     # Create correlation matrix
+    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider1.csv")
     corr_matrix = df.corr()
 
     # Create heatmap trace
