@@ -30,3 +30,7 @@
 * Geographical dispersion of students studying in the institute will be displayed using maps. 
 #
 
+## Our Documentation Link
+* https://datamind-documentation.netlify.app/ 
+#
+
