@@ -1,8 +1,28 @@
-DataMind
+# DATAMIND 
+![datamind](https://github.com/321dhruuv0037/python_mp/blob/main/Pdfs%2CLogos/DataMind%20Logo%201.png)
 
-![image](https://user-images.githubusercontent.com/109984055/221249815-e0a5c91b-c7e7-4be1-acba-d984233fd784.png)
 
-This project aims to use various Python libraries such as plotly, seaborn, NumPy, pandas, and 
-matplotlib to visualize student data and analyse their performance. The data used in this project 
-will be generated through synthetic data generation techniques, which will allow for a more 
-comprehensive analysis of the data.
+#
+## Team Members :
+
+[Aditya Gothiwarekar](https://github.com/adityagothiwarekar)
+
+[Dhruuv Naik](https://github.com/321dhruuv0037)
+
+[Pratham Junghare](https://github.com/prathamj22)
+
+[Yashas Khot](https://github.com/yashaskhot)
+
+
+#
+## Technologies Used :
+* PyCharm IDE
+* Jupyter Notebook
+
+#
+## What is DATAMIND ?
+* DATAMIND aims to present student data collected during the FY admission process (academic performance, demographic, etc.) in a clear and effective manner. 
+* Data will be presented in form of graphs & pie charts.
+* Geographical dispersion of students studying in the institute will be displayed using maps. 
+#
+
