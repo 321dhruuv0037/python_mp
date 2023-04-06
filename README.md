@@ -18,11 +18,19 @@
 ## Technologies Used :
 * PyCharm IDE
 * Jupyter Notebook
+* VS Code
+* Dash
+* Plotly
+* Folium
 
 #
 ## What is DATAMIND ?
 * DATAMIND aims to present student data collected during the FY admission process (academic performance, demographic, etc.) in a clear and effective manner. 
 * Data will be presented in form of graphs & pie charts.
 * Geographical dispersion of students studying in the institute will be displayed using maps. 
+#
+
+## Our Documentation Link
+* https://datamind-documentation.netlify.app/ 
 #
 
