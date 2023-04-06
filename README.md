@@ -18,6 +18,10 @@
 ## Technologies Used :
 * PyCharm IDE
 * Jupyter Notebook
+* VS Code
+* Dash
+* Plotly
+* Folium
 
 #
 ## What is DATAMIND ?
