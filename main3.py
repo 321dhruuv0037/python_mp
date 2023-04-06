@@ -1,6 +1,5 @@
 import base64
 import math
-import io
 
 import dash_bootstrap_components.themes
 import seaborn as sns
@@ -11,6 +10,7 @@ import plotly.graph_objs as go
 import matplotlib as plt
 import folium
 import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
 from folium.plugins import HeatMap
 from matplotlib import pyplot as plt
 
@@ -22,12 +22,17 @@ from sklearn.linear_model import LinearRegression
 import pandas as pd
 import folium
 import dash_table
-from dash.dependencies import Input, Output, State
 
 
 from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster, FeatureGroupSubGroup
+import datetime
 
+from dash import Dash, dcc, html
+from dash.dependencies import Input, Output, State
+import base64
+import io
+import os
 
 
 
@@ -88,7 +93,9 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # newdf=pd.DataFrame(lm.coef_,X.columns,columns=['jee percentile'])
 # abcd=newdf.to_html()
 
-# df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
+df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
+year_list = list(df['year'].unique())
+print(year_list)
 
 options = [
     {'label': 'COMPS', 'value': 'COMPS'},
@@ -110,30 +117,25 @@ options2 = [
     {'label': 'XII TH PERCENTAGE', 'value': 'xii_perc'},
     {'label': 'JEE PERCENTILE', 'value': 'jee_perc'}
 ]
-df = pd.DataFrame()
+df = pd.read_csv('slider.csv')
+df = df.fillna(df.mean())
+max_df = df.groupby(['year', 'stream'])['jee_perc'].mean().reset_index()
+fig1 = px.line(max_df, x='year', y='jee_perc', color='stream', title='Average Percentile by Year and Stream',hover_data=['jee_perc', 'year'],labels={'jee_perc': 'JEE Percentile'})
+fig1.update_layout(xaxis=dict(tickmode='linear', dtick=1))
+highest = max_df.loc[max_df['jee_perc'].idxmax()]
+formatted_percentile = "{:.2f}".format(highest['jee_perc'])
+formatted_year = int(highest['year'])
+highest_branch = highest['stream']
+filtered_df = df[df['year'] == '2021']
+corr = filtered_df['sid'].corr(filtered_df['x_perc'])
+print("Correlation between SID and X percentile: {:.2f}".format(corr))
 
+# Add an annotation to the graph with the highest percentile value and year
+best_stream = highest['stream']
 
-def generate_figure(df):
-    max_df = df.groupby(['year', 'stream'])['jee_perc'].mean().reset_index()
-    fig1 = px.line(max_df, x='year', y='jee_perc', color='stream', title='Average Percentile by Year and Stream',
-                   hover_data=['jee_perc', 'year'], labels={'jee_perc': 'JEE Percentile'})
-    fig1.update_layout(xaxis=dict(tickmode='linear', dtick=1))
-    highest = max_df.loc[max_df['jee_perc'].idxmax()]
-    formatted_percentile = "{:.2f}".format(highest['jee_perc'])
-    formatted_year = int(highest['year'])
-    highest_branch = highest['stream']
-    filtered_df = df[df['year'] == '2021']
-    corr = filtered_df['sid'].corr(filtered_df['x_perc'])
-    print("Correlation between SID and X percentile: {:.2f}".format(corr))
-
-    # Add an annotation to the graph with the highest percentile value and year
-    best_stream = highest['stream']
-
-    print(f"The best performing stream is {best_stream}")
-
-    return fig1
-# # Group the data by stream and calculate the percentage change for each stream
-# stream_df = df.groupby('stream')['jee_perc'].pct_change().reset_index()
+print(f"The best performing stream is {best_stream}")
+# Group the data by stream and calculate the percentage change for each stream
+stream_df = df.groupby('stream')['jee_perc'].pct_change().reset_index()
 
 # Find the stream with the highest percentage growth
 # Read the CSV file into a Pandas DataFrame
@@ -237,50 +239,31 @@ def generate_figure(df):
 import pandas as pd
 
 # read the csv file
-
+df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
+print(df.describe())
 # fill missing values with the mean of the column
 df = df.fillna(df.mean())
 
-# # group the data by year and stream and calculate the mean JEE percentile
-# max_df = df.groupby(['year', 'stream'])['jee_perc'].mean().reset_index()
-#
-# # filter the data for the years 2021 and 2022
-# filtered_df = max_df[max_df['year'].isin([2018, 2021])]
-#
-# # pivot the data to create a table with streams as columns and years as index
-# pivot_df = filtered_df.pivot(index='year', columns='stream', values='jee_perc')
-#
-# # calculate the percentage change between the two years for each stream
-# percent_change = (pivot_df.loc[2021] - pivot_df.loc[2018]) / pivot_df.loc[2018] * 100
-#
-# # display the percentage change for each branch
-# print("Percentage change in JEE percentile by branch:\n", percent_change)
-#
-# # find the branch with the highest percentage change
-# highest_change = percent_change.idxmax()
-# print("The branch with the highest percentage change is:", highest_change, "with a change of", round(percent_change[highest_change], 2), "%.")
-def generate_figure(df):
-    max_df = df.groupby(['year', 'stream'])['jee_perc'].mean().reset_index()
-    fig1 = px.line(max_df, x='year', y='jee_perc', color='stream', title='Average Percentile by Year and Stream',
-                   hover_data=['jee_perc', 'year'], labels={'jee_perc': 'JEE Percentile'})
-    fig1.update_layout(xaxis=dict(tickmode='linear', dtick=1))
-    highest = max_df.loc[max_df['jee_perc'].idxmax()]
-    formatted_percentile = "{:.2f}".format(highest['jee_perc'])
-    formatted_year = int(highest['year'])
-    highest_branch = highest['stream']
-    filtered_df = df[df['year'] == '2021']
-    corr = filtered_df['sid'].corr(filtered_df['x_perc'])
-    print("Correlation between SID and X percentile: {:.2f}".format(corr))
+# group the data by year and stream and calculate the mean JEE percentile
+max_df = df.groupby(['year', 'stream'])['jee_perc'].mean().reset_index()
 
-    # Add an annotation to the graph with the highest percentile value and year
-    best_stream = highest['stream']
+# filter the data for the years 2021 and 2022
+filtered_df = max_df[max_df['year'].isin([2018, 2021])]
 
-    print(f"The best performing stream is {best_stream}")
+# pivot the data to create a table with streams as columns and years as index
+pivot_df = filtered_df.pivot(index='year', columns='stream', values='jee_perc')
 
-    return fig1, best_stream, formatted_percentile, formatted_year, highest_branch
+# calculate the percentage change between the two years for each stream
+percent_change = (pivot_df.loc[2021] - pivot_df.loc[2018]) / pivot_df.loc[2018] * 100
 
+# display the percentage change for each branch
+print("Percentage change in JEE percentile by branch:\n", percent_change)
 
-
+# find the branch with the highest percentage change
+highest_change = percent_change.idxmax()
+print("The branch with the highest percentage change is:", highest_change, "with a change of", round(percent_change[highest_change], 2), "%.")
+df =pd.read_csv("slider.csv")
+print(df.head())
 
 years = ['2018', '2019', '2020', '2021']
 divisions = ['COMPS', 'EXTC', 'MECH']
@@ -289,6 +272,13 @@ divisions = ['COMPS', 'EXTC', 'MECH']
 locations = ['Central Harbour', 'Western Line']
 
 # Define the table header
+df_summary = df.describe().reset_index()
+df_summary = df_summary.round(0)
+
+
+
+print(df_summary)
+
 
 
 
@@ -301,7 +291,7 @@ locations = ['Central Harbour', 'Western Line']
 
 
 app.layout = html.Div([
-html.Div(
+    html.Div(
     [
         navigation.navbar,
         html.H1("Student Data Analysis Dashboard" ,style={'margin-left':'300px','padding-top':'10px'}),
@@ -313,6 +303,7 @@ html.Div(
     className="container",
 ),
 html.Div([
+    html.H1("Upload Your CSV File"),
     dcc.Upload(
         id='upload-data',
         children=html.Div([
@@ -320,7 +311,7 @@ html.Div([
             html.A('Select Files')
         ]),
         style={
-            'width': '100%',
+            'width': '50%',
             'height': '60px',
             'lineHeight': '60px',
             'borderWidth': '1px',
@@ -330,10 +321,12 @@ html.Div([
             'margin': '10px'
         },
         # Allow multiple files to be uploaded
-        multiple=True
+        multiple=False
     ),
-    html.Div(id='output-data-upload'),
-]),
+    html.Div(id='output-data-upload')
+])
+
+,
 
 #     dbc.Container([
 #     dbc.Row([
@@ -449,47 +442,42 @@ dcc.Graph(id='bar_graph',
             html.Div(id='selected-branch')
         ],className='my-dropdown1'),
     ]),
+    dbc.Row([
+        dbc.Col([
+            dcc.Graph(figure=fig1),
+        ], width=9),
 
+        dbc.Col([
+           html.Div([
+               html.H1(children='Analysis',style={'justify-content':'center','text-align': 'center','display': 'flex'}),
 
-dbc.Row([
-    dbc.Col([
-        dcc.Graph(figure=fig1),
-    ], width=9),
-
-    dbc.Col([
-        html.Div([
-            html.H1(children='Analysis',
-                    style={'justify-content': 'center', 'text-align': 'center', 'display': 'flex'}),
-
-            # Display the best performing stream
-            html.Div(
-                children=[
-                    f"The best performing stream is {best_stream}",
-                    html.I(className='fa-sharp fa-solid fa-user-tie', style={'padding': '10px'})
-                ],
-                style={'padding-top': '30px', 'font-size': '20px'}
-            ),
-            html.Div(
-                children=[
-                    f"Highest average JEE percentile: {formatted_percentile} ",
-                    html.Br(),
-                    f"Year: ({formatted_year}) for {highest_branch} ",
-                    html.I(className='fas fa-fire')
-                ]
-                , style={'padding-top': '40px', 'font-size': '20px'}),
-            html.Div(id='result', style={'padding-top': '60px', 'font-size': '20px'})
-        ]),
-               # html.Div(
-               #     children=[
-               #         "The branch with the highest percentage change is:",
-               #         html.Br(),
-               #         highest_change,
-               #         " with a change of ",
-               #         round(percent_change[highest_change], 2),
-               #         " ",
-               #         html.I(className='fa-solid fa-percent')
-               #     ]
-               #     , style={'padding-top': '60px', 'font-size': '20px'})
+               # Display the best performing stream
+               html.Div(
+                   children=[
+                       f"The best performing stream is {best_stream}",
+                       html.I(className='fa-sharp fa-solid fa-user-tie',style={'padding':'10px'})
+                   ],
+                   style={'padding-top': '30px', 'font-size': '20px'}
+               ),
+               html.Div(
+                   children=[
+                       f"Highest average JEE percentile: {formatted_percentile} ",
+                       html.Br(),
+                       f"Year: ({formatted_year}) for {highest_branch} ",
+                       html.I(className='fas fa-fire')
+                   ]
+               ,style={'padding-top':'40px','font-size':'20px'}),
+               html.Div(
+                   children=[
+                       "The branch with the highest percentage change is:",
+                       html.Br(),
+                       highest_change,
+                       " with a change of ",
+                       round(percent_change[highest_change], 2),
+                       " ",
+                       html.I(className='fa-solid fa-percent')
+                   ]
+                   , style={'padding-top': '60px', 'font-size': '20px'})
            ]),
         ],style={ 'background-image': 'url("https://wallpapercave.com/wp/wp6422920.jpg")',
     'background-size': 'cover',
@@ -644,44 +632,72 @@ html.P(dcc.Markdown(
 
         ]),
     ],style={'padding':'20px'}),
-dbc.Row([
-    html.Div(id='slider-output')
-]),
-html.Div([
-    html.H1("Data Analysis and Predictions", style={'margin-left': '300px', 'padding': '10px', 'font-size': '60px'}),
     dbc.Row([
-        dbc.Col([
-            html.Div(id='MachineLearningAnalysis'),
-            html.P(dcc.Markdown(
-                """
-                **Below ** is  the analysis of Students **data** for the above ***table***
-                """
-            ), className="text1"),
-            html.Div(id='MachineLearningAnalysis2', className="MachineLearningAnalysis2"),
-        ], className='MachineLearningAnalysis'),
-        dbc.Col([
-            dbc.Card(dcc.Graph(id='heatmap'))
-        ], className='heatmap'),
+        html.Div(id='slider-output')
+    ]),
+   html.Div([
+       html.H1("Data Analysis and Predictions", style={'margin-left': '300px', 'padding': '10px','font-size':'60px'}),
+       dbc.Row([
+           dbc.Col([
+               html.Div(id='MachineLearningAnalysis'),
+               html.P(dcc.Markdown(
+                   """
+                   **Below ** is  the analysis of Students **data** for the above ***table***
+                   """
+               ),className="text1"),
+               html.Div(id='MachineLearningAnalysis2',className="MachineLearningAnalysis2"),
+           ],className='MachineLearningAnalysis'),
+           dbc.Col([
+               dbc.Card(dcc.Graph(id='heatmap'))
+           ],className='heatmap'),
 
-    ]),
-    dbc.Row([
-        dbc.Col(
-            html.Div(
-                [
-                    html.H2("Change the background", className="display-3"),
-                    html.Hr(className="my-2"),
-                    html.P(
-                        "Swap the background-color utility and add a `.text-*` color "
-                        "utility to mix up the look."
-                    ),
-                    dbc.Button("Example Button", color="light", outline=True),
-                ],
-                className="h-100 p-5 text-white bg-dark rounded-3",
+       ]),
+        dbc.Row([
+            dbc.Col(
+                html.Div(
+                    [
+                        html.H2("Change the background", className="display-3"),
+                        html.Hr(className="my-2"),
+                        html.P(
+                            "Swap the background-color utility and add a `.text-*` color "
+                            "utility to mix up the look."
+                        ),
+                        dbc.Button("Example Button", color="light", outline=True),
+                    ],
+                    className="h-100 p-5 text-white bg-dark rounded-3",
+                ),
+                md=6,
             ),
-            md=6,
-        ),
-    ]),
-], className='Data_analysis')
+            dbc.Col(
+dash_table.DataTable(
+    id='table',
+    columns=[{"name": i, "id": i} for i in df_summary.columns],
+    data=df_summary.round(0).to_dict('records'),
+    style_table={'overflowX': 'scroll'},
+    style_cell={
+        'minWidth': '0px', 'maxWidth': '180px',
+        'overflow': 'hidden',
+        'textOverflow': 'ellipsis',
+        'textAlign': 'center',
+        'fontFamily': 'Arial, sans-serif',
+        'fontSize': '12px',
+        'backgroundColor': '#f2f2f2'
+    },
+    style_header={
+        'backgroundColor': 'black',
+        'color': 'white',
+        'fontWeight': 'bold',
+        'textAlign': 'center',
+        'fontFamily': 'Arial, sans-serif',
+        'fontSize': '14px'
+    },
+)
+    ,
+            ),
+        ]),
+
+
+   ],className='Data_analysis'),
 html.Footer(className=' footer text-center text-lg-start text-muted', style={'text-align': 'left', 'background-color': '#333333'}, children=[
         html.Section(className='', style={'padding': '5px'}, children=[
             html.Div(className='container text-center text-md-start mt-5', children=[
@@ -717,140 +733,146 @@ html.Footer(className=' footer text-center text-lg-start text-muted', style={'te
                             html.Br(),
                             'Don Bosco Institute Of Technology Premier Automobiles Road, Opp. Fiat Company, Kurla (W), Mumbai- 400 070',
                             html.Br(),
-                               ])
+                               ]),
+
+
+    ])
                     ]),
-                   html.B(html.H5(style={'text-align': 'centre','margin-left':'330px'}, children=['Copyright 2023 © All rights reserved by Capstone Data Comapany']))
+                   html.B(html.H5(style={'text-align': 'centre','margin-left':'330px'}, children=['Copyright 2023 © All rights reserved by Capstone Data Comapany'])),
                 ])
             ])
         ])
 ])
+def check_columns(df):
+    # Define your column conditions here
+    # For example, if your CSV file should have columns 'A', 'B', and 'C'
+    # you can check that with the following code:
+    required_columns = ['sid', 'stream', 'name', 'mob_no', 'email', 'gender', 'x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii', 'jee_perc', 'father_name', 'father_occupation', 'mother_name', 'mother_occupation', 'parent_income', 'pincode', 'year', 'sector', 'quota', 'longitude', 'latitude', 'line', 'hmap']
+    missing_columns = set(required_columns) - set(df.columns)
+    if len(missing_columns) > 0:
+        return False
+    return True
 
-@app.callback(Output('result', 'children'),
-              Input('upload-data', 'contents'))
-def update_output(contents):
-    # Check if a file was uploaded
-    if contents is not None:
-        # Convert the uploaded file to a Pandas DataFrame
-        content_type, content_string = contents.split(',')
-        decoded = base64.b64decode(content_string)
-        df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+def save_file(contents, filename):
+    # Decode the contents of the uploaded file
+    content_type, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
+    # Convert the decoded bytes into a pandas dataframe
+    df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+    # Check if the file satisfies the column conditions
+    if not check_columns(df):
+        raise ValueError('Uploaded CSV file does not meet the required column conditions')
+    # Save the file as slider.csv in the server's file system
+    file_path = os.path.join(os.getcwd(), 'slider.csv')
+    df.to_csv(file_path, index=False)
+    file_path = os.path.join(os.getcwd(), 'slider.csv')
+    if os.path.exists(file_path):
+        # Append the new data to the existing file
+        existing_df = pd.read_csv(file_path)
+        df = pd.concat([existing_df, df], ignore_index=True)
+    df.to_csv(file_path, index=False)
+    return f'Successfully saved {filename} as slider.csv'
 
-        # Call the calculate_percent_change function to get the results
-        result_str, highest_change = calculate_percent_change(df)
-
-        # Return the results as a formatted HTML element
-        return [
-            "The branch with the highest percentage change is:",
-            html.Br(),
-            highest_change,
-            " with a change of ",
-            round([highest_change], 2),
-            " ",
-            html.I(className='fa-solid fa-percent')
-        ]
-    else:
-        # If no file was uploaded, display a message
-        return "Please upload a file"
-
-
-@app.callback(Output('output-data', 'children'),
-              Input('upload-data', 'contents'),
-              State('upload-data', 'filename'))
+@app.callback(
+    Output('output-data-upload', 'children'),
+    [Input('upload-data', 'contents')],
+    [State('upload-data', 'filename')]
+)
 def update_output(contents, filename):
-    global df
-    if contents:
-        content_type, content_string = contents.split(',')
-        decoded = base64.b64decode(content_string)
-        try:
-            if 'csv' in filename:
-                # Assume that the user uploaded a CSV file
-                df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-            elif 'xls' in filename:
-                # Assume that the user uploaded an Excel file
-                df = pd.read_excel(io.BytesIO(decoded))
-            elif 'txt' or 'tsv' in filename:
-                # Assume that the user uploaded a TXT or TSV file
-                df = pd.read_csv(io.StringIO(decoded.decode('utf-8')), delimiter='\t')
-        except Exception as e:
-            print(e)
-            return html.Div([
-                'There was an error processing this file.'
-            ])
-
-        # Return a table with the loaded data
-        return html.Table(
-            # Header
-            [html.Tr([html.Th(col) for col in df.columns])] +
-            # Body
-            [html.Tr([html.Td(df.iloc[i][col]) for col in df.columns]) for i in range(min(len(df), 10))]
-        )
+    if contents is None:
+        raise PreventUpdate
+    try:
+        message = save_file(contents, filename)
+        return html.Div([
+            html.Div('File uploaded successfully!'),
+            html.Br(),
+            html.Div(message)
+        ])
+    except Exception as e:
+        return html.Div([
+            html.Div('An error occurred while uploading the file:'),
+            html.Br(),
+            html.Div(str(e))
+        ])
 
 @app.callback(Output('bar_graph2', 'figure'),
-              [Input('select_years', 'value')])
-def update_graph(value):
-    global df
-    df5 = df.groupby(['stream', 'year'])['parent_income'].mean().reset_index()
-    df6 = df5[df5['year'] == value]
+              Input('select_years', 'value'),
+              State('upload-image', 'contents'),
+              State('upload-image', 'filename'))
+def update_graph(value, contents, filename):
+    if contents is not None:
+        content_type, content_string = contents.split(',')
+        decoded = base64.b64decode(content_string)
 
-    return {
-        'data': [
-            go.Bar(
-                x=df6['stream'],
-                y=df6['parent_income'],
-                text=df6['parent_income'],
-                width=[0.4, 0.4, 0.4, 0.4],
-                
-                texttemplate='%{text:,.2s}',
-                textposition='outside',
-                marker=dict(color='#38D56F'),
-                textfont=dict(
-                    family="sans-serif",
-                    size=12,
-                    color='black'),
+        if 'csv' in filename:
+            # Assume that the user uploaded a CSV file
+            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
+            print("file found")
+        elif 'xls' in filename:
+            # Assume that the user uploaded an Excel file
+            df = pd.read_excel(io.BytesIO(decoded))
+
+        df6 = df[df['year'] == value]
+        print(df.head())
+
+        return {
+            'data': [
+                go.Bar(
+                    x=df6['stream'],
+                    y=df6['parent_income'],
+                    text=df6['parent_income'],
+                    width=[0.4, 0.4, 0.4, 0.4],
+                    texttemplate='%{text:,.2s}',
+                    textposition='outside',
+                    marker=dict(color='#38D56F'),
+                    textfont=dict(
+                        family="sans-serif",
+                        size=12,
+                        color='black'),
+                )
+            ],
+            'layout': go.Layout(
+                plot_bgcolor='white',
+                paper_bgcolor='white',
+                title={
+                    'text': '<b>Average Annual Parent Income branchwise (₹) in' + ' ' + str((value)),
+                    'y': 0.98,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top'},
+                titlefont={
+                    'color': 'black',
+                    'size': 17},
+                hovermode='closest',
+                margin=dict(t=30, r=70),
+                xaxis=dict(showline=True,
+                           showgrid=False,
+                           showticklabels=True,
+                           linecolor='black',
+                           linewidth=1,
+                           ticks='outside',
+                           tickfont=dict(
+                               family='Arial',
+                               size=12,
+                               color='black')
+
+                           ),
+
+                yaxis=dict(title='<b>Average Parent Income (₹)</b>',
+                           visible=True,
+                           color='black',
+                           showline=False,
+                           showgrid=True,
+                           )
             )
-        ],
-        'layout': go.Layout(
-            plot_bgcolor='white',
-            paper_bgcolor='white',
-            title={
-                'text': '<b>Average Annual Parent Income branchwise (₹) in' + ' ' + str((value)),
-
-                'y': 0.98,
-                'x': 0.5,
-                'xanchor': 'center',
-                'yanchor': 'top'},
-            titlefont={
-                'color': 'black',
-                'size': 17},
-            hovermode='closest',
-            margin=dict(t=30, r=70),
-            xaxis=dict(showline=True,
-                       showgrid=False,
-                       showticklabels=True,
-                       linecolor='black',
-                       linewidth=1,
-                       ticks='outside',
-                       tickfont=dict(
-                           family='Arial',
-                           size=12,
-                           color='black')
-
-                       ),
-
-            yaxis=dict(title='<b>Average Parent Income (₹)</b>',
-                       visible=True,
-                       color='black',
-                       showline=False,
-                       showgrid=True,
-                       )
-        )
-    }
+        }
+    else:
+        return {}
 
 
 @app.callback(Output('bar_graph', 'figure'),
               [Input('select_years', 'value')])
 def update_graph(value):
-    global df
     df3 = df.groupby(['stream', 'year'])['jee_perc'].max().reset_index()
     df4 = df3[df3['year'] == value]
 
@@ -910,7 +932,6 @@ def update_graph(value):
 @app.callback(Output('pie_chart', 'figure'),
               [Input('select_years', 'value')])
 def update_graph(value):
-    global df
     df6 = df.groupby(['year', 'gender'])['sid'].count().reset_index()
     df7 = df6[df6['year'] == value]
 
@@ -953,7 +974,6 @@ def update_graph(value):
 @app.callback(Output('pie_chart2', 'figure'),
               [Input('select_years', 'value')])
 def update_graph(value):
-    global df
     df8 = df.groupby(['year','sector'])['sid'].count().reset_index()
     df9 = df8[df8['year'] == value]
 
@@ -992,7 +1012,6 @@ def update_graph(value):
 @app.callback(Output('bar_graph3', 'figure'),
               [Input('select_years', 'value')])
 def update_graph(value):
-    global df
     df10 = df.groupby(['quota', 'year'])['jee_perc'].max().reset_index()
     df11 = df10[df10['year'] == value]
 
@@ -1055,7 +1074,6 @@ def update_graph(value):
     [Input('select_years', 'value')]
 )
 def display_data(value):
-    global df
     #This code first filters the dataframe df to only include rows where the year is 2019. Then, it groups the resulting dataframe by sector and counts the number of occurrences of sid in each group. The resulting dataframe df_genre has columns sector and sid.
     #, the code uses idxmax() to find the row index of the row with the maximum value of sid, and then selects the sector value from that row using .loc[]. The resulting df_genre2 should be the sector with the highest count of sid for the year 2019.
     df_year = df[df['year'] == value]
@@ -1172,8 +1190,7 @@ def display_data(value):
 def display_data(value):
     #This code first filters the dataframe df to only include rows where the year is 2019. Then, it groups the resulting dataframe by sector and counts the number of occurrences of sid in each group. The resulting dataframe df_genre has columns sector and sid.
     #, the code uses idxmax() to find the row index of the row with the maximum value of sid, and then selects the sector value from that row using .loc[]. The resulting df_genre2 should be the sector with the highest count of sid for the year 2019.
-    # df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
-    global df
+    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
     df_year = df[df['year'] == value]
     X = df_year[['x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii']]
     Y = df_year['jee_perc']
@@ -1202,7 +1219,6 @@ def display_data(value):
     [Input('select_years', 'value')]
 )
 def update_heatmap(selected_columns):
-    global df
     # Get selected range of columns
 
 
@@ -1236,8 +1252,7 @@ def update_heatmap(selected_columns):
     [Input('select_years', 'value')]
 )
 def display_data(value):
-    # df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
-    global df
+    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
     df_year = df[df['year'] == value]
     X = df_year[['x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii']]
     Y = df_year['jee_perc']
@@ -1275,7 +1290,6 @@ def display_data(value):
 def update_graph(selected_year, selected_stream, dropdown1_value, dropdown2_value):
     # Filter data based on selected year and stream
     # df['sid'] = df['sid'].astype(str)
-    global df
     if(selected_stream == 'none'):
         filtered_df = df[df['year'] == selected_year]
         if (dropdown1_value == 'x_perc' and dropdown2_value == 'xii_perc') or (
@@ -1382,7 +1396,6 @@ def update_graph(selected_year, selected_stream, dropdown1_value, dropdown2_valu
     [Input('my-slider', 'value')],
     [Input('my-dropdown3', 'value')])
 def update_output(selected_year, selected_stream):
-    global df
     if selected_stream == 'none':
         df_filtered = df[df['year'] == selected_year]
         count = len(df_filtered)
@@ -1441,7 +1454,6 @@ def update_output(selected_year, selected_stream):
     [Input('select_years', 'value')]
 )
 def update_output(value):
-    global df
     # Update the heatmap data based on the slider value
     nwdf100 = pd.read_csv('coords.csv')
     df = nwdf100[nwdf100['year'] == value]
