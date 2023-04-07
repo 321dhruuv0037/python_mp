@@ -1,3 +1,12 @@
+import csv
+import os
+import base64
+import io
+import pandas as pd
+import dash
+from dash import html, State
+from dash import dcc
+from dash.exceptions import PreventUpdate
 import base64
 import math
 
@@ -10,7 +19,6 @@ import plotly.graph_objs as go
 import matplotlib as plt
 import folium
 import dash_bootstrap_components as dbc
-from dash.exceptions import PreventUpdate
 from folium.plugins import HeatMap
 from matplotlib import pyplot as plt
 
@@ -26,73 +34,18 @@ import dash_table
 
 from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster, FeatureGroupSubGroup
-import datetime
 
-from dash import Dash, dcc, html
-from dash.dependencies import Input, Output, State
-import base64
-import io
-import os
-
-
-
-
-
-# assume you have a "long-form" data frame
-# see https://plotly.com/python/px-arguments/ for more options
 font_awesome1 = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css'
 font_awesome2 = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/regular.min.css'
 font_awesome3 = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/solid.min.css'
 external_stylesheets = [
     dbc.themes.BOOTSTRAP,
-    '/assets/style.css',
+    '/assets/style2.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/regular.min.css',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/solid.min.css'
 ]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-# df =pd.read_csv("Student_dataset_2021.csv")
-# new=df.groupby('stream')
-# newdf=new.max()
-# fig7 =px.bar(newdf,y='jee_perc',text='jee_perc',color='jee_perc',labels={'jee_perc':'Highest percentile in jee'})
-# newdf2=df.groupby('stream')
-# df2=newdf2.mean()
-# fig2 =px.bar(df2,x='parent_income',text='parent_income',color='parent_income',labels={'parent_income':'Average parent income'})
-# df3=new.count()
-# fig3 =px.bar(df3,x='gender',color='gender',title='MALE VS FEMALE RATIO IN IT',labels={'gener':'gender'})
-# df6=df.groupby('gender')
-# newdf=df6.count()
-# fig =px.pie(newdf,values='sid',hole=0.5,color='sid')
-# fig6=fig.update_traces(textinfo='percent+value')
-# df=pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/location.csv")
-# a_list=df[['place','latitude','longitude']].values.tolist()
-# map=folium.Map(location=[19.0760,72.8777])
-# fg=folium.FeatureGroup(name='map')
-# for i in a_list:
-#     fg.add_child(folium.Marker(location=[i[1],i[2]],popup=i[0],icon=folium.Icon(color='green')))
-# map.add_child(fg)
-# map.save('Locations.html')
-# fig =px.pie(newdf,values='sid',hole=0.5,color='sid')
-# fig.update_traces(textinfo='percent+value')
-# fig8=fig
-# df3=pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/Student_dataset_2021.csv")
-# newdata9=df3.groupby('minority')
-# newdata10=newdata9.max()
-# fig10 =px.bar(newdata10,y='jee_perc',text='jee_perc',color='jee_perc',labels={'jee_perc':'Highest percentile in jee'})
-#
-# ###machine learning###
-# dfnew1=pd.read_csv("Student_dataset_2021.csv")
-# X=dfnew1[[ 'x_perc','xii_perc','cet_perc','physics_xii','chem_xii','maths_xii']]
-# Y = dfnew1['jee_perc']
-# X_train,X_test,Y_train,Y_test= train_test_split(X, Y, test_size=0.4,random_state=101)
-# lm = LinearRegression()
-# lm.fit(X_train, Y_train)
-# print(lm.intercept_)
-# print(lm.coef_)
-# X_train.columns
-# newdf=pd.DataFrame(lm.coef_,X.columns,columns=['jee percentile'])
-# abcd=newdf.to_html()
-
 df =pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider.csv")
 year_list = list(df['year'].unique())
 print(year_list)
@@ -272,8 +225,9 @@ divisions = ['COMPS', 'EXTC', 'MECH']
 locations = ['Central Harbour', 'Western Line']
 
 # Define the table header
-df_summary = df.describe().reset_index()
-df_summary = df_summary.round(0)
+cols_to_include = ['sid','x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii', 'jee_perc', 'parent_income']
+df_summary = df[cols_to_include].describe().round(0).reset_index()
+df_summary = df_summary.rename(columns={'sid': 'Student ID', 'x_perc': 'Xth Percentage', 'xii_perc': 'XII th Percentage', 'cet_perc': 'CET Percentile', 'physics_xii': 'Physics XIIth', 'chem_xii': 'Chemistry XIIth', 'maths_xii': 'Maths XIIth', 'jee_perc': 'JEE Percentile', 'parent_income': 'Parent Income'})
 
 
 
@@ -287,10 +241,34 @@ print(df_summary)
 
 
 
-
-
-
+# Define the layout of the app
 app.layout = html.Div([
+    dcc.Tabs([
+        dcc.Tab(label='Upload File', children=[
+            html.H1("Upload Your CSV File"),
+            dcc.Upload(
+                id='upload-data',
+                children=html.Div([
+                    'Drag and Drop or ',
+                    html.A('Select Files')
+                ]),
+                style={
+                    'width': '50%',
+                    'height': '60px',
+                    'lineHeight': '60px',
+                    'borderWidth': '1px',
+                    'borderStyle': 'dashed',
+                    'borderRadius': '5px',
+                    'textAlign': 'center',
+                    'margin': '10px'
+                },
+                # Allow multiple files to be uploaded
+                multiple=False
+            ),
+            html.Div(id='output-data-upload')
+        ]),
+        dcc.Tab(label='View Data', id='view-tab',children=[
+html.Div([
     html.Div(
     [
         navigation.navbar,
@@ -303,7 +281,6 @@ app.layout = html.Div([
     className="container",
 ),
 html.Div([
-    html.H1("Upload Your CSV File"),
     dcc.Upload(
         id='upload-data',
         children=html.Div([
@@ -311,7 +288,7 @@ html.Div([
             html.A('Select Files')
         ]),
         style={
-            'width': '50%',
+            'width': '100%',
             'height': '60px',
             'lineHeight': '60px',
             'borderWidth': '1px',
@@ -321,12 +298,10 @@ html.Div([
             'margin': '10px'
         },
         # Allow multiple files to be uploaded
-        multiple=False
+        multiple=True
     ),
-    html.Div(id='output-data-upload')
-])
-
-,
+    html.Div(id='output-data-upload'),
+]),
 
 #     dbc.Container([
 #     dbc.Row([
@@ -386,7 +361,9 @@ html.Div([
             ], className='container_slider'),
 dcc.Graph(id='bar_graph',
                       config={'displayModeBar': 'hover'},
-                      className='bar_graph_border',style={'border': '1px ridge black'})
+                      className='bar_graph_border',style={'border': '1px ridge black'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/barchart.html', target='_blank'),    ' about Bar Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
+
 
 ]),
             ],width=6,style={'padding': '10px'}),
@@ -398,12 +375,14 @@ dcc.Graph(id='bar_graph',
         dbc.Col([
             dcc.Graph(id='bar_graph3',
                       config={'displayModeBar': 'hover'},
-                      className='bar_graph_border',style={'border': '1px ridge black', 'background-color': '#f8f9fa'})
+                      className='bar_graph_border',style={'border': '1px ridge black', 'background-color': '#f8f9fa'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/barchart.html', target='_blank'),    ' about Bar Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
         ], width=6 , style={'padding': '10px'}),
         dbc.Col([
             dcc.Graph(id='bar_graph2',
                       config={'displayModeBar': 'hover'},
-                      className='bar_graph_border',style={'border': '1px ridge black'})
+                      className='bar_graph_border',style={'border': '1px ridge black'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/barchart.html', target='_blank'),    ' about Bar Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
         ], width=6 , style={'padding': '10px'})
     ]),
     dbc.Row([
@@ -411,7 +390,8 @@ dcc.Graph(id='bar_graph',
             html.Div([
                 dcc.Graph(id='pie_chart',
                           config={'displayModeBar': 'hover'},
-                          className='bar_graph_border',style={'border': '1px ridge black'})
+                          className='bar_graph_border',style={'border': '1px ridge black'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/piechart.html', target='_blank'),    ' about Pie Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
 
             ]),
         ], width=6, style={'padding': '10px'}),
@@ -419,7 +399,8 @@ dcc.Graph(id='bar_graph',
             html.Div([
                 dcc.Graph(id='pie_chart2',
                           config={'displayModeBar': 'hover'},
-                          className='bar_graph_border ',style={'border': '1px ridge black'})
+                          className='bar_graph_border ',style={'border': '1px ridge black'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/piechart.html', target='_blank'),    ' about Pie Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'})
 
             ]),
 
@@ -427,19 +408,15 @@ dcc.Graph(id='bar_graph',
     ]),
     dbc.Row([
         dbc.Row([
-            html.P(dcc.Markdown(
-                """please select the **branch**"""
-            ), style={'line-height': '1', 'font-size': '25px','margin-bottom': '20px'}),
+dbc.Row([
+    html.Div([
+        html.P(dcc.Markdown(
+            """Graph Representing Performance of All **branches** Over The Years"""
+        ), style={'line-height': '1', 'font-size': '25px', 'margin-bottom': '20px', 'text-align': 'center'}),
+    ], style={'background-color': 'white', 'border-radius': '10px', 'border': '2px solid black', 'padding': '20px'}),
+]),
 
-            dcc.Dropdown(
-                id='my-dropdown',
-                options=options,
-                value='IT',
-                className='dropdown',
-                style={'width':'400px'}
-
-            ),
-            html.Div(id='selected-branch')
+            html.Div(id='selected-branch'),
         ],className='my-dropdown1'),
     ]),
     dbc.Row([
@@ -477,7 +454,7 @@ dcc.Graph(id='bar_graph',
                        " ",
                        html.I(className='fa-solid fa-percent')
                    ]
-                   , style={'padding-top': '60px', 'font-size': '20px'})
+                   , style={'padding-top': '60px', 'font-size': '20px'}),
            ]),
         ],style={ 'background-image': 'url("https://wallpapercave.com/wp/wp6422920.jpg")',
     'background-size': 'cover',
@@ -485,6 +462,7 @@ dcc.Graph(id='bar_graph',
     'box-shadow': 'inset 0px 0px 10px 1px rgba(255, 255, 255, 0.5), inset 0px 0px 20px 1px rgba(255, 255, 255, 0.2), 0px 0px 10px 1px rgba(0, 0, 0, 0.5)',
     'color': 'white',},className='card',width=3),
     ],style={'padding':'20px'} ),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/linechart.html', target='_blank'),    ' about Line Charts.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'}),
     html.Div([
 html.Div(
     [
@@ -553,6 +531,7 @@ dbc.Col([    html.H2('COUNT', style={'margin-top': '0', 'margin-bottom': '30px'}
 })
 
     ],style={'padding':'10px'}),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/histogram.html', target='_blank'),    ' about Histogram.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'}),
 
     ]),
     ],className='graph_generator',style={'border':'2px inset black','background-color':'#ECF0F1'}),
@@ -563,7 +542,7 @@ dbc.Col([    html.H2('COUNT', style={'margin-top': '0', 'margin-bottom': '30px'}
             """
         ), style={'line-height': '1', 'font-size': '25px',
                   'margin-left':'300px','margin-bottom': '20px'}),
-        dbc.Col([html.Iframe(id='maps', srcDoc=open('heatmap.html', 'r').read(), width='100%', height='600',style={'border':'5px solid black'}),]),
+        dbc.Col([html.Iframe(id='maps', srcDoc=open('heatmap.html', 'r').read(), width='100%', height='600',style={'border':'5px solid black','padding':'5px'}),]),
 dbc.Col(
     [
         html.P(dcc.Markdown(
@@ -631,74 +610,97 @@ html.P(dcc.Markdown(
 )
 
         ]),
+html.Div([    html.A('Know more ➤', href='https://datamind-documentation.netlify.app/heatmap.html', target='_blank'),    ' about Density Heatmap.'], style={'text-align': 'center', 'padding-top': '20px', 'font-size': '20px'}),
     ],style={'padding':'20px'}),
     dbc.Row([
         html.Div(id='slider-output')
     ]),
-   html.Div([
-       html.H1("Data Analysis and Predictions", style={'margin-left': '300px', 'padding': '10px','font-size':'60px'}),
-       dbc.Row([
-           dbc.Col([
-               html.Div(id='MachineLearningAnalysis'),
-               html.P(dcc.Markdown(
-                   """
-                   **Below ** is  the analysis of Students **data** for the above ***table***
-                   """
-               ),className="text1"),
-               html.Div(id='MachineLearningAnalysis2',className="MachineLearningAnalysis2"),
-           ],className='MachineLearningAnalysis'),
-           dbc.Col([
-               dbc.Card(dcc.Graph(id='heatmap'))
-           ],className='heatmap'),
-
-       ]),
+    html.Div([
+        html.H1("Data Analysis and Predictions",
+                style={'margin-left': '300px', 'padding': '10px', 'font-size': '60px'}),
         dbc.Row([
-            dbc.Col(
+            dbc.Col([
+html.P(dcc.Markdown(
+                    """
+                    Below is  **Correlation** of Different Features of The **Dataset** amongst Itself
+                    """
+                ),style={'font-size':'20px'}),
+                html.Div(id='MachineLearningAnalysis'),
+                html.P(dcc.Markdown(
+                    """
+                    **Below ** is  the analysis of Students **data** for the above ***table***
+                    """
+                ), style={'justify-content': 'center','align-items': 'center','display': 'flex',}),
                 html.Div(
-                    [
-                        html.H2("Change the background", className="display-3"),
-                        html.Hr(className="my-2"),
-                        html.P(
-                            "Swap the background-color utility and add a `.text-*` color "
-                            "utility to mix up the look."
-                        ),
-                        dbc.Button("Example Button", color="light", outline=True),
-                    ],
-                    className="h-100 p-5 text-white bg-dark rounded-3",
+                    id='MachineLearningAnalysis2',
+                    className='MachineLearningAnalysis2',
+                    style={
+                        'background-color': 'white',
+                        'border': '2px solid black',
+                        'box-shadow': '5px 5px 5px grey',
+                        'padding': '10px',
+                        'margin': '10px',
+                        'border-radius': '10px',
+                    }
                 ),
-                md=6,
-            ),
+            ], className='MachineLearningAnalysis'),
+            dbc.Col([
+html.P(dcc.Markdown(
+                    """
+                    Below is  The ** Heamtmap of Correlation** of Different Features of The **Dataset** 
+                    """
+                ),style={'font-size':'20px'}),
+                dbc.Card(dcc.Graph(id='heatmap'))
+            ], className='heatmap'),
+
+        ]),
+        dbc.Row([
+html.P(
+    dcc.Markdown(
+        """
+        **Below** is the **Statistical Analysis** of the **Entire Dataset**
+        """
+    ),
+    style={
+        'font-size': '25px',
+        'justify-content': 'center',
+        'align-items': 'center',
+        'display': 'flex',
+        'background-color': 'white',
+        'border-radius': '50px',
+        'padding': '10px',
+        'border': '2px solid black',
+    }
+),
             dbc.Col(
-dash_table.DataTable(
-    id='table',
-    columns=[{"name": i, "id": i} for i in df_summary.columns],
-    data=df_summary.round(0).to_dict('records'),
-    style_table={'overflowX': 'scroll'},
-    style_cell={
-        'minWidth': '0px', 'maxWidth': '180px',
-        'overflow': 'hidden',
-        'textOverflow': 'ellipsis',
-        'textAlign': 'center',
-        'fontFamily': 'Arial, sans-serif',
-        'fontSize': '12px',
-        'backgroundColor': '#f2f2f2'
-    },
-    style_header={
-        'backgroundColor': 'black',
-        'color': 'white',
-        'fontWeight': 'bold',
-        'textAlign': 'center',
-        'fontFamily': 'Arial, sans-serif',
-        'fontSize': '14px'
-    },
-)
-    ,
+                dash_table.DataTable(
+                    id='table',
+                    columns=[{"name": i, "id": i} for i in df_summary.columns],
+                    data=df_summary.round(0).to_dict('records'),
+                    style_table={'overflowX': 'scroll'},
+                    style_cell={
+                        'minWidth': '0px', 'maxWidth': '180px',
+                        'overflow': 'hidden',
+                        'textOverflow': 'ellipsis',
+                        'textAlign': 'center',
+                        'fontFamily': 'Arial, sans-serif',
+                        'fontSize': '12px',
+                        'backgroundColor': '#f2f2f2'
+                    },
+                    style_header={
+                        'backgroundColor': 'black',
+                        'color': 'white',
+                        'fontWeight': 'bold',
+                        'textAlign': 'center',
+                        'fontFamily': 'Arial, sans-serif',
+                        'fontSize': '14px'
+                    },
+                ),
             ),
         ]),
+    ], className='Data_analysis', style={'border': '5px solid black','padding':'10px'}),
 
-
-   ],className='Data_analysis'),
-html.Footer(className=' footer text-center text-lg-start text-muted', style={'text-align': 'left', 'background-color': '#333333'}, children=[
+    html.Footer(className=' footer text-center text-lg-start text-muted', style={'text-align': 'left', 'background-color': '#333333'}, children=[
         html.Section(className='', style={'padding': '5px'}, children=[
             html.Div(className='container text-center text-md-start mt-5', children=[
                 html.Div(className='row mt-3', children=[
@@ -719,6 +721,10 @@ html.Footer(className=' footer text-center text-lg-start text-muted', style={'te
                         html.P(children=[
                             '>',
                             html.A(href='assets/aboutus .html', className='text-reset', style={'text-decoration': 'none', 'text-align': 'left'}, children=['ABOUT US'])
+                        ]),
+                        html.P(children=[
+                            '>',
+                            html.A(href='assets/docu.html', className='text-reset', style={'text-decoration': 'none', 'text-align': 'left'}, children=['ABOUT US'])
                         ]),
                         html.P(children=[
                             '>',
@@ -743,15 +749,25 @@ html.Footer(className=' footer text-center text-lg-start text-muted', style={'te
             ])
         ])
 ])
+
+        ])
+    ])
+])
+
+
 def check_columns(df):
     # Define your column conditions here
     # For example, if your CSV file should have columns 'A', 'B', and 'C'
     # you can check that with the following code:
-    required_columns = ['sid', 'stream', 'name', 'mob_no', 'email', 'gender', 'x_perc', 'xii_perc', 'cet_perc', 'physics_xii', 'chem_xii', 'maths_xii', 'jee_perc', 'father_name', 'father_occupation', 'mother_name', 'mother_occupation', 'parent_income', 'pincode', 'year', 'sector', 'quota', 'longitude', 'latitude', 'line', 'hmap']
+    required_columns = ['sid', 'stream', 'name', 'mob_no', 'email', 'gender', 'x_perc', 'xii_perc', 'cet_perc',
+                        'physics_xii', 'chem_xii', 'maths_xii', 'jee_perc', 'father_name', 'father_occupation',
+                        'mother_name', 'mother_occupation', 'parent_income', 'pincode', 'year', 'sector', 'quota',
+                        'longitude', 'latitude', 'line', 'hmap']
     missing_columns = set(required_columns) - set(df.columns)
     if len(missing_columns) > 0:
         return False
     return True
+
 
 def save_file(contents, filename):
     # Decode the contents of the uploaded file
@@ -773,8 +789,10 @@ def save_file(contents, filename):
     df.to_csv(file_path, index=False)
     return f'Successfully saved {filename} as slider.csv'
 
+
 @app.callback(
-    Output('output-data-upload', 'children'),
+    [Output('output-data-upload', 'children'),
+     Output('view-tab', 'disabled')],
     [Input('upload-data', 'contents')],
     [State('upload-data', 'filename')]
 )
@@ -783,91 +801,72 @@ def update_output(contents, filename):
         raise PreventUpdate
     try:
         message = save_file(contents, filename)
-        return html.Div([
-            html.Div('File uploaded successfully!'),
-            html.Br(),
-            html.Div(message)
-        ])
+        return [html.Div([html.Div('File uploaded successfully!'), html.Br(), html.Div(message)]), False]
     except Exception as e:
-        return html.Div([
+        return [html.Div([
             html.Div('An error occurred while uploading the file:'),
             html.Br(),
             html.Div(str(e))
-        ])
-
+        ]), True]
 @app.callback(Output('bar_graph2', 'figure'),
-              Input('select_years', 'value'),
-              State('upload-image', 'contents'),
-              State('upload-image', 'filename'))
-def update_graph(value, contents, filename):
-    if contents is not None:
-        content_type, content_string = contents.split(',')
-        decoded = base64.b64decode(content_string)
+              [Input('select_years', 'value')])
+def update_graph(value):
+    df5 = df.groupby(['stream', 'year'])['parent_income'].mean().reset_index()
+    df6 = df5[df5['year'] == value]
 
-        if 'csv' in filename:
-            # Assume that the user uploaded a CSV file
-            df = pd.read_csv(io.StringIO(decoded.decode('utf-8')))
-            print("file found")
-        elif 'xls' in filename:
-            # Assume that the user uploaded an Excel file
-            df = pd.read_excel(io.BytesIO(decoded))
+    return {
+        'data': [
+            go.Bar(
+                x=df6['stream'],
+                y=df6['parent_income'],
+                text=df6['parent_income'],
+                width=[0.4, 0.4, 0.4, 0.4],
 
-        df6 = df[df['year'] == value]
-        print(df.head())
-
-        return {
-            'data': [
-                go.Bar(
-                    x=df6['stream'],
-                    y=df6['parent_income'],
-                    text=df6['parent_income'],
-                    width=[0.4, 0.4, 0.4, 0.4],
-                    texttemplate='%{text:,.2s}',
-                    textposition='outside',
-                    marker=dict(color='#38D56F'),
-                    textfont=dict(
-                        family="sans-serif",
-                        size=12,
-                        color='black'),
-                )
-            ],
-            'layout': go.Layout(
-                plot_bgcolor='white',
-                paper_bgcolor='white',
-                title={
-                    'text': '<b>Average Annual Parent Income branchwise (₹) in' + ' ' + str((value)),
-                    'y': 0.98,
-                    'x': 0.5,
-                    'xanchor': 'center',
-                    'yanchor': 'top'},
-                titlefont={
-                    'color': 'black',
-                    'size': 17},
-                hovermode='closest',
-                margin=dict(t=30, r=70),
-                xaxis=dict(showline=True,
-                           showgrid=False,
-                           showticklabels=True,
-                           linecolor='black',
-                           linewidth=1,
-                           ticks='outside',
-                           tickfont=dict(
-                               family='Arial',
-                               size=12,
-                               color='black')
-
-                           ),
-
-                yaxis=dict(title='<b>Average Parent Income (₹)</b>',
-                           visible=True,
-                           color='black',
-                           showline=False,
-                           showgrid=True,
-                           )
+                texttemplate='%{text:,.2s}',
+                textposition='outside',
+                marker=dict(color='#38D56F'),
+                textfont=dict(
+                    family="sans-serif",
+                    size=12,
+                    color='black'),
             )
-        }
-    else:
-        return {}
+        ],
+        'layout': go.Layout(
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            title={
+                'text': '<b>Average Annual Parent Income branchwise (₹) in' + ' ' + str((value)),
+
+                'y': 0.98,
+                'x': 0.5,
+                'xanchor': 'center',
+                'yanchor': 'top'},
+            titlefont={
+                'color': 'black',
+                'size': 17},
+            hovermode='closest',
+            margin=dict(t=30, r=70),
+            xaxis=dict(showline=True,
+                       showgrid=False,
+                       showticklabels=True,
+                       linecolor='black',
+                       linewidth=1,
+                       ticks='outside',
+                       tickfont=dict(
+                           family='Arial',
+                           size=12,
+                           color='black')
+
+                       ),
+
+            yaxis=dict(title='<b>Average Parent Income (₹)</b>',
+                       visible=True,
+                       color='black',
+                       showline=False,
+                       showgrid=True,
+                       )
+        )
+    }
 
 
 @app.callback(Output('bar_graph', 'figure'),
@@ -1223,6 +1222,7 @@ def update_heatmap(selected_columns):
 
 
     # Create correlation matrix
+    df = pd.read_csv("C:/Users/adity/PycharmProjects/pythonProject1/slider1.csv")
     corr_matrix = df.corr()
 
     # Create heatmap trace
